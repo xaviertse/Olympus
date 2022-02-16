@@ -1,0 +1,27 @@
+<!DOCTYPE FilterScript>
+<FilterScript>
+  <filter name="Poisson-disk Sampling">
+    <Param name="SampleNum" value="100000" type="RichInt" />
+    <Param name="Radius" value="0" min="0" max="100" type="RichAbsPerc" />
+    <Param name="MontecarloRate" value="20" type="RichInt" />
+    <Param name="ApproximateGeodesicDistance" value="false" type="RichBool" />
+    <Param name="Subsample" value="true" type="RichBool" />
+    <Param name="RefineMesh" value="0" type="RichMesh" />
+    <Param name="RefineFlag" value="false" type="RichBool" />
+  </filter>
+  <filter name="Compute normals for point sets">
+    <Param name="K" value="10" type="RichInt"/>
+    <Param name="flipFlag" value="true" type="RichBool"/>
+    <Param name="viewPos" z="100" x="0" y="0" type="RichPoint3f"/>
+  </filter>
+  <filter name="Surface Reconstruction: Ball Pivoting">
+    <Param name="BallRadius" value="0" min="0" type="RichAbsPerc" max="3082.68"/>
+    <Param name="Clustering" value="20" type="RichFloat"/>
+    <Param name="CreaseThr" value="90" type="RichFloat"/>
+    <Param name="DeleteFaces" value="true" type="RichBool"/>
+  </filter>
+  <filter name="Re-Orient all faces coherentely"/>
+  <!--filter name="Invert Faces Orientation">
+    <Param type="RichBool" value="true" name="forceFlip"/>
+   </filter-->
+</FilterScript>

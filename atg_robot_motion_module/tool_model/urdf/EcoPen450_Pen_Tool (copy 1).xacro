@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+   <!-- defining tool --><!-- Later, add collision models etc-->
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+  <xacro:property name="thickness" value="0.001" />
+  <xacro:property name="offset" value="${-25*thickness}" />
+  <xacro:property name="contact_radius" value="0.005" />
+
+  <!-- defining tool ATI Adapter Plate & Sensor-->
+  <link name="controller_tool0">
+  <!-- pen marker-->
+      <visual>
+        <geometry>
+        <!--mesh filename="package://tool_model/meshes/EcoPen450_300ml_ASM.stl" scale="0.001 0.001 0.001"/-->
+        <mesh filename="${tcp['xacro_dir']}" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <origin rpy="0 3.14159 0.785398" xyz="0 0 0" />
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+      <!--creating contact's patch-->
+      <!--visual>
+        <geometry>
+         <cylinder length="${thickness}" radius="${contact_radius}"/>
+        </geometry>
+        <origin rpy="${tcp['rx']} ${tcp['ry']} ${tcp['rz']}"
+                xyz= "${tcp['x']-offset* (cos(tcp['rx']) * cos(tcp['ry']))}
+                      ${tcp['y']-offset* (sin(tcp['rx']) * cos(tcp['ry']))}
+                      ${tcp['z']-offset* (sin(tcp['ry']) )}" />
+
+        <material name="LightOrange">
+          <color rgba="1.0 0.7 0.0 0.5"/>
+        </material>
+      </visual-->
+      <!--Calculation for rpy to z's direction vector
+          x = cos(yaw)*cos(pitch)   yaw=x   pitch=y   tcp['rx']=z
+          y = sin(yaw)*cos(pitch)
+          z = sin(pitch)
+
+          x = sin(crz)
+          y = -(sin(crx) * cos(crz))
+          z = cos(crx) * cos(cry)
+
+          vDir->X = sin(yaw);
+          vDir->Y = -(sin(pitch)*cos(yaw));
+          vDir->Z = -(cos(pitch)*cos(yaw));
+      -->
+      <visual>
+        <geometry>
+         <cylinder length="${0.23}" radius="${contact_radius}"/>
+        </geometry>
+        <origin rpy="${0} ${0} ${0}"
+                xyz= "${tcp['x']}
+                      ${tcp['y']}
+                      ${tcp['z']-0.23/2-0.025}" />
+
+        <material name="LightOrange">
+          <color rgba="1.0 0.7 0.0 0.5"/>
+        </material>
+      </visual>
+  </link>
+
+  <!-- create a virutal link that is aligned with tool0 on the robot controller -->
+  <joint name="controller_tool0_joint" type="fixed">
+    <parent link="ee_link"/>
+    <child link="controller_tool0"/>
+    <!--origin xyz="0 0 0" rpy="${-PI/2} 0 ${-PI/2}"/-->
+    <origin xyz="0 0 0" rpy="${-PI/2} 0  ${-PI/2}"/>
+  </joint>
+
+  <link name="tool"> <!-- will be used for last point calculation-->
+    <!--visual>
+        <geometry>
+            <cylinder length="${0.001}" radius="${contact_radius*2*1}"/>
+        </geometry>
+        <origin rpy="${0} ${0} ${0}"
+                xyz= "${0}
+                      ${0}
+                      ${-0.001/2-0.02}" />
+
+        <material name="LightOrange">
+            <color rgba="1.0 0.7 0.0 0.5"/>
+        </material>
+    </visual-->
+  </link>
+
+  <joint name="flange_to_tool" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool" />
+          <!--origin xyz="-0.05246 -0.05139 0.179" rpy="0 0 2.3562"  /-->
+          <!--origin xyz="${a['x']} ${a['y']} ${a['z']}" rpy="${a['rx']} ${a['ry']} ${a['rz']}"  /-->
+          <origin xyz="${0+tcp['x']} ${0+tcp['y']} ${0+tcp['z']}" rpy="${0+tcp['rx']} ${0+tcp['ry']} ${0+tcp['rz']}"  />
+  </joint>
+
+
+  <disable_collisions link1="controller_tool0" link2="link6" reason="Adjacent" /> <!-- add this to srdf, its useless here-->
+</robot>

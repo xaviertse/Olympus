@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package>
+  <name>atg_ur10e_descartes</name>
+  <version>0.0.0</version>
+  <description>The atg_ur10e_descartes package</description>
+
+  <maintainer email="josh_chen@artc.a-star.edu.sg">JoshC</maintainer>
+  <author>JoshC</author>
+  <license>
+  Copyright (c) 2021 Advanced Robotic Applications
+  Advanced Remanufacturing and Technology Centre
+  A*STAR Research Entities (Co. Registration No. 199702110H)
+  </license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>descartes_core</build_depend>
+  <build_depend>descartes_moveit</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>liblapack-dev</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf_conversions</build_depend>
+
+  <run_depend>descartes_core</run_depend>
+  <run_depend>descartes_moveit</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>liblapack-dev</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf_conversions</run_depend>
+
+  <export>
+    <descartes_core plugin="${prefix}/atg_ur10e_descartes_plugins.xml"/>
+  </export>
+</package>

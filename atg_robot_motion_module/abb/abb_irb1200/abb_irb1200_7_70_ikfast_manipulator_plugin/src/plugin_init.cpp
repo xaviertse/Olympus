@@ -1,0 +1,4 @@
+// register IKFastKinematicsPlugin as a KinematicsBase implementation
+#include <abb_irb1200_7_70_ikfast_manipulator_plugin/abb_irb1200_7_70_manipulator_ikfast_moveit_plugin.hpp>
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(abb_irb1200_7_70_ikfast_manipulator_plugin::IKFastKinematicsPlugin, kinematics::KinematicsBase);

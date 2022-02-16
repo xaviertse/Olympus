@@ -1,0 +1,9 @@
+##added by ATG for env params
+package: "tool_model" 
+xacro_dir: /urdf/masking_table.xacro
+X: -0.282840
+Y: 0.014140
+Z: 0.000000
+R_: 0.000000
+P_: 3.141593
+Y_: 3.926991

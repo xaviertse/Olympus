@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<robot name="abb_irb1200_workspace" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find abb_irb1200_support)/urdf/irb1200_7_70_macro.xacro"/>
+  <xacro:abb_irb1200_7_70 prefix="" /> <!--joint_limited="true"/-->
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </joint>
+
+  <!-- defining tool -->
+  <!-- create a virtual link that is aligned with tool0 on the UR robot controller,
+  dummy values for origin, will be overwritten by tool.xacro,
+  controller_tool0 is corrected direction of actual robot model vs robot model (flip)
+  tool is to define actual robot TCP -->
+
+  <link name="controller_tool0"/>
+  <joint name="controller_tool0_joint" type="fixed">
+    <parent link="tool0"/>
+    <child link="controller_tool0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!--tool definition will be within tool model xacro-->
+  <!--link name="tool"/>
+  <joint name="flange_to_tool" type="fixed">
+    <parent link="controller_tool0"/>
+    <child link="tool"/>
+    <origin xyz="0 0.16 0.2165" rpy="0 0 0"/>
+  </joint-->
+
+  <!-- Environment, EOAT(tool) and coupon -->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+  <xacro:property name="filename_env" value="$(find tool_model)/config/env_params.yaml" />
+  <xacro:property name="env" value="${load_yaml(filename_env)}" />
+
+  <xacro:include filename="$(find ${env['package']})${env['xacro_dir']}" />
+  <xacro:include filename="$(find ${tcp['package']})${tcp['xacro_dir']}" />
+
+  <xacro:include filename="$(find tool_model)/urdf/coupon.xacro" />
+
+  <!--xacro:include filename="$(find tool_model)/urdf/masking_table.xacro"/-->
+  <!--xacro:include filename="$(find tool_model)/urdf/EcoPen450_Pen_Tool_old.xacro"/-->
+</robot>
+
+
