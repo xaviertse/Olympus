@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+   <!-- defining tool --><!-- Later, add collision models etc-->
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+
+  <!-- create a virutal link that is aligned with actual UR EOAT orient to the robot controller -->
+  <!--link name="controller_tool0"/>
+  <joint name="controller_tool0_joint" type="fixed">
+    <parent link="ee_link"/>
+    <child link="controller_tool0"/>
+    <origin xyz="0 0 0" rpy="${-PI/2} 0  ${-PI/2}"/>
+  </joint-->
+
+  <!-- defining tool EcoPen, Adapter Plate & trunking-->
+  <link name="tool_model">
+    <!-- pen marker-->
+    <visual>
+      <geometry>
+      <mesh filename="package://tool_model/meshes/OLY_EOAT.stl" scale="0.001 0.001 0.001"/>
+      <!--mesh filename="${tcp['xacro_dir']}" scale="0.001 0.001 0.001"/-->
+      </geometry>
+      <origin xyz="${0} ${0} ${0.037}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+    <geometry>
+      <mesh filename="package://tool_model/meshes/OLY_EOAT.stl" scale="0.001 0.001 0.001"/>
+      <!--mesh filename="${tcp['xacro_dir']}" scale="0.001 0.001 0.001"/-->
+      </geometry>
+      <origin xyz="${0} ${0} ${0.037}" rpy="0 0 0"/>
+    </collision>
+    <!-- eco pen cable, visual geometry r = 15mm but collision set to r = 50mm-->
+    <visual>
+      <geometry>
+        <cylinder radius="0.015" length="0.15"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${-0.11}" rpy="0 0 0"/>
+      <material name="Black_25">
+        <color rgba="0.25 0.25 0.25 1"/>
+      </material>
+    </visual>
+    <collision>
+        <geometry>
+        <cylinder radius="0.05" length="0.15"/>
+        </geometry>
+        <origin xyz="${0} ${0.16} ${-0.11}" rpy="0 0 0"/>
+    </collision>
+    <!-- eco pen cable trunk plate -->
+    <visual>
+      <geometry>
+        <box size="0.15 0.05 0.002"/>
+      </geometry>
+      <origin xyz="${0.15/2} ${0.05/2} ${0.022}" rpy="0 0 0"/>
+      <material name="LightGrey"/>
+    </visual>
+    <!-- eco pen cable trunk-->
+    <visual>
+      <geometry>
+        <cylinder radius="0.02" length="0.15"/>
+      </geometry>
+      <origin xyz="${0.15-0.025} ${0.05/2} ${-0.15/3}" rpy="0 0 0"/>
+      <material name="Black_25"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="0.1 0.25 0.02"/>
+      </geometry>
+      <origin xyz="${0} ${0.16/2} ${0.02/2}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="tool_model_joint" type="fixed">
+    <parent link="controller_tool0"/>
+    <child link="tool_model"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="${tcp['eeX']} ${tcp['eeY']} ${tcp['eeZ']}"
+            rpy="${tcp['eeR_']} ${tcp['eeP_']} ${tcp['eeY_']}"/>
+  </joint>
+
+
+  <link name="tool"/> <!-- will be used for last point calculation-->
+  <joint name="flange_to_tool" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool" />
+          <!--origin xyz="0 0.16 0.2165" rpy="0 0 0"/-->
+          <origin xyz="${tcp['X']} ${tcp['Y']} ${tcp['Z']}"
+                  rpy="${tcp['R_']} ${tcp['P_']} ${tcp['Y_']}"/>
+  </joint>
+
+  <!--xacro:include filename="$(find tool_model)/urdf/tcp_origin_viz.xacro" /-->
+
+  <disable_collisions link1="controller_tool0" link2="link6" reason="Adjacent" /> <!-- add this to srdf, its useless here-->
+</robot>

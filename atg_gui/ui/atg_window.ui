@@ -2313,6 +2313,11 @@ Close</string>
                  </item>
                  <item>
                   <property name="text">
+                   <string>Olympus</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
                    <string>Masking Table (old)</string>
                   </property>
                  </item>
@@ -6916,6 +6921,11 @@ size [mm]</string>
                  <item>
                   <property name="text">
                    <string>Boundary</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Point Base</string>
                   </property>
                  </item>
                  <item>

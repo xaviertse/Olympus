@@ -26,6 +26,8 @@ namespace ATG_surface_identification
     g_cloud_=load_point_cloud_data(filename);
     Eigen::Vector4f centroid;              //josh added to cal centroid into array
     pcl::compute3DCentroid(*g_cloud_, centroid);    //josh added to cal centroid into array
+    pcl::io::savePCDFile("data/coupons/clusters/master_"+std::to_string(0)+".pcd", *g_cloud_);
+
     //emit 10%
     emit_percent = 10;
     emit_signal ("segmentation_signal", "percent\n"+std::to_string(emit_percent));

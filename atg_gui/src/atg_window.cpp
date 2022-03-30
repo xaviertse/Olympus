@@ -601,6 +601,9 @@ void ATG_Window::readQSettings_ENV_OBJ_only()//read Environment and Obj Frame on
   if(env_selection=="Round Table R06")
   {env_X="1000",env_Y="500",env_Z="500",env_R_="0",env_P_="0",env_Y_="0",
    obj_X="0",obj_Y="0",obj_Z="0",obj_R_="0",obj_P_="0",obj_Y_="0";}
+  if(env_selection=="Olympus")
+  {env_X="-282.84",env_Y="14.14",env_Z="0",env_R_="0",env_P_="180",env_Y_="225",
+   obj_X="-696.59",obj_Y="-603.54",obj_Z="71.52",obj_R_="-0.45",obj_P_="0",obj_Y_="-45.4";}
 
   readValue = settings.value(env_selection+"/env/X", env_X).toString();
   ui.doubleSpinBox_env_X->setValue(readValue.toDouble());
@@ -2174,6 +2177,25 @@ void ATG_Window::comboBox_toolpath_selection_textChanged(QString Text_comboBox)
       ui.spinBox_KSearch_TP_Surface->setVisible(true);
       ui.checkbox_reverse_toolpath     ->setVisible(true);
     }
+    else if(Text_comboBox == "Point Base")
+    {
+      ui.label_toolpath_resolution  ->setVisible(true);
+      ui.spinBox_toolpath_resolution->setVisible(true);
+      ui.checkbox_toolpath_resolution_forced->setVisible(true);
+      ui.label_toolpath_hole_patch          ->setVisible(true);
+      ui.spinBox_toolpath_hole_patch        ->setVisible(true);
+      ui.label_toolpath_step_size   ->setVisible(true);
+      ui.spinBox_toolpath_step_size ->setVisible(true);
+      ui.label_toolpath_offset   ->setVisible(true);
+      ui.spinBox_toolpath_offset ->setVisible(true);
+      ui.label_toolpath_downsample  ->setVisible(true);
+      ui.spinBox_toolpath_downsample->setVisible(true);
+      ui.label_Path_Rotate  ->setVisible(true);
+      ui.spinBox_Path_Rotate->setVisible(true);
+      ui.label_KSearch_TP_Surface  ->setVisible(true);
+      ui.spinBox_KSearch_TP_Surface->setVisible(true);
+      ui.checkbox_reverse_toolpath     ->setVisible(true);
+    }
     else
     {
       ui.label_toolpath_resolution  ->setVisible(true);
@@ -2256,6 +2278,8 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_contour " + cmd +"' &";//-hold to hold, +hold to close
   else if (ui.comboBox_toolpath_selection->currentText()=="Zig Zag")
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_zigzag " + cmd +"' &";//-hold to hold, +hold to close
+  else if (ui.comboBox_toolpath_selection->currentText()=="Point Base")
+    cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_point " + cmd +"' &";//-hold to hold, +hold to close
   else
   {
     std::cout << "Invalid toolpath selection\n";
@@ -3105,7 +3129,7 @@ void ATG_Window::mouseEventProcess(const visualization::MouseEvent &event)
       point.z = z;
       //highlght around radius from cloud_open
       float radius = ui.doubleSpinBox_selection_radius->value(); //mm scale
-      if (radius==0) radius=0.01;
+      if (radius==0) radius=0.001;
       if (radius>0 && g_cloud_opened_->empty()==0)
       {
         //cloud_opened set when openclicked

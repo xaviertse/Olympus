@@ -984,6 +984,338 @@ namespace ATG_toolpath_generation
     }
 
   }
+//--------------------------------------------------------------------------------------------------------------end---------------------
+
+  int ATG_TPG::point_toolpath(std::string filename, std::string filename1)
+  {
+    // ===== 1. Load variables
+    // ===== 2. Load cluster
+    // ===== 3. Find cluster bounding box, and also transform and data into bounding box, saved in cloudPointsProjected.txt
+    // ===== 4. Toolpath Generation, python script, saves toolpath within boundingbox into sampling_tool_path.txt
+    // ===== 5. Loades saved toolpath and transform into actual location
+    // ===== 6. Loads coupon surface into kdtreeFlann and check each point in toolpath
+    // ===== 6.1 calculate for offset direction for each point
+    // ===== 6.2 calculate for individual point's normal from coupon data, and flip for correction
+    // ===== 6.3 calculate for individual point's quat and rpy
+
+
+    // ===== 1. Load variables, done before this function call, this is just for displaying the variables
+    // =======================
+    std::cout << "external_on_      : " << std::to_string(external_on_      ) << std::endl;
+    std::cout << "internal_on_      : " << std::to_string(internal_on_      ) << std::endl;
+    std::cout << "resolution_       : " << std::to_string(resolution_       ) << std::endl;
+    std::cout << "step_size_        : " << std::to_string(step_size_        ) << std::endl;
+    std::cout << "offset_           : " << std::to_string(offset_           ) << std::endl;
+    std::cout << "path_rotate_      : " << std::to_string(path_rotate_      ) << std::endl;
+    std::cout << "downsample_       : " << std::to_string(downsample_       ) << std::endl;
+    std::cout << "ksearch_tp_       : " << std::to_string(ksearch_tp_       ) << std::endl;
+    std::cout << "normal_flip_      : " << std::to_string(normal_flip_      ) << std::endl;
+    std::cout << "section_range_min_: " << std::to_string(section_range_min_) << std::endl;
+    std::cout << "section_range_max_: " << std::to_string(section_range_max_) << std::endl;
+    std::cout << "reverse_toolpath_ : " << std::to_string(reverse_toolpath_ ) << std::endl;
+    std::cout << "forced_resolution_: " << std::to_string(forced_resolution_) << std::endl;
+    std::cout << "hole_patch_size_  : " << std::to_string(hole_patch_size_  ) << std::endl;
+    std::cout << "lift_height_      : " << std::to_string(lift_height_      ) << std::endl;
+
+    // ===== 2. Load cluster
+    // =======================
+    clock_t time1 = clock();//start timer
+    pcl::PointCloud<pcl::PointXYZ>::Ptr coupon_data(new pcl::PointCloud<pcl::PointXYZ>);
+
+    if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *coupon_data) == -1)
+    {
+      std::cout << "Failed to read PCD file from: " << filename << std::endl;
+      exit(1);
+    }
+
+    // ===== 3. Find cluster bounding box, and also transform and data into bounding box, saves in cloudPointsProjected.txt
+    // =======================
+     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+     pcl::io::loadPCDFile <pcl::PointXYZ> (filename1, *cloud);
+
+    clock_t time2 = clock();//read timer
+    std::cout <<"debug point 2 " << std::endl;
+    Eigen::Matrix4f transform_matrix;
+    transform_matrix = Bounding_Box(cloud);                                        //bounding box calculation and point cloud data projection
+
+    // ===== 4. Toolpath Generation, python script, saves toolpath within boundingbox into sampling_tool_path.txt
+    // =======================
+    std::cout << "Running Toolpath Generation ...\n";
+    std::string cmd;
+    cmd="rosrun atg_toolpath_generation Tool_Path_Generation_point.py "
+        + std::to_string(external_on_)      + " " //1
+        + std::to_string(internal_on_)      + " " //2
+        + std::to_string(1)                 + " " //3
+        + std::to_string(resolution_)       + " " //4
+        + std::to_string(forced_resolution_)+ " " //5
+        + std::to_string(hole_patch_size_)  + " " //6
+        + std::to_string(step_size_)        + " " //7
+        + std::to_string(offset_)           + " " //8
+        + std::to_string(downsample_)       + " " //9
+        + std::to_string(path_rotate_)      + " " //10
+        + std::to_string(reverse_toolpath_) + " " //11
+        + std::to_string(section_range_min_)+ " " //11
+        + std::to_string(section_range_max_);     //12
+      system(cmd.c_str());
+
+    clock_t time3 = clock();//read timer
+    std::cout <<"Timing c, Tool_Path_Generation_point time: " << std::fixed << std::setprecision(4) << float(time3-time2)/float(CLOCKS_PER_SEC) << "s" << std::endl;
+
+    try //try catch error in pcl open, sometimes no cloud created, change zoom size
+    {
+      // ===== 5. Loades saved toolpath and transform into actual location
+      // =======================
+     // pcl::PointCloud<pcl::PointXYZ>::Ptr tool_path_projected(new pcl::PointCloud<pcl::PointXYZ>);
+     // tool_path_projected = ReadTXT("data/coupons/sampling_tool_path.txt");                           //tranformation of the generated toolpath
+      pcl::PointCloud<pcl::PointXYZ>::Ptr tool_path_back_projected(new pcl::PointCloud<pcl::PointXYZ>);
+    //  pcl::transformPointCloud(*tool_path_projected, *tool_path_back_projected, transform_matrix);                          //convert the projected toolpath to toolpath in global coordinate frame
+     tool_path_back_projected=coupon_data;
+
+      //tool_path = tool_path_projected;   //no transformation needed
+
+      // ===== 6. Loads coupon surface into kdtreeFlann and check each point in toolpath
+      // ===== 6.1 calculate for offset direction for each point
+
+      // =======================
+      std::string output_filename = "data/coupons/tool_path_back_projected_w_lift_n_trigger.txt";                           //final tool path file
+      std::ofstream fout(output_filename);
+      std::cout <<"debug point 3" << std::endl;
+
+      pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_cloud_open; //josh, instead of using normalestimationOMPL for whole target_surface, compute targeted point's normal
+      kdtree_cloud_open.setInputCloud (cloud);  //josh, instead of using normalestimationOMPL for whole target_surface, compute targeted point's normal
+
+      pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+      pcl::PointNormal waypoint_w_normal;
+
+      int tp_size = tool_path_back_projected->points.size();
+//      int tp_size_5pct = tp_size/16;
+
+        for (int i = 0; i < tp_size; i++)
+        {
+//          //need to emit 20-100% every 5%
+//          if (tp_size>16){ //cater to data with less than 16 waypoints
+//            if (i % tp_size_5pct==0){
+//              int progresspct = 20+i/tp_size_5pct*5;
+//              //emit progressUpdated(progresspct);
+//              std::cout << "\rEMIT progressUpdate"<< progresspct <<"";
+//            }
+//          }
+          //need to emit 50-100%
+          if(1)
+          {
+            float progresspct = 50+50*i/(tp_size-1);
+            emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
+          }
+          std::cout << "\rProcessing "<<std::to_string(i+1)<<"/"<<std::to_string(tp_size)<<" on data";
+          if(i+1==tp_size) std::cout <<"\rProcessed "<<std::to_string(tp_size)<<" pts on data\n";
+
+
+          // ===== 6.2 calculate for individual point's normal from coupon data, and flip for correction
+
+          //josh, START - instead of using normalestimationOMPL for whole target_surface, compute targeted point's normal
+          std::vector<int> pointIdxRadiusSearch;
+          std::vector<float> pointRadiusSquaredDistance;
+          Eigen::Vector4f pt_normal;
+          if ( kdtree_cloud_open.nearestKSearch (tool_path_back_projected->points[i], ksearch_tp_, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+          {
+            float curvature;//1mm offset of envelope from selected points
+            pcl::computePointNormal(*cloud,pointIdxRadiusSearch,pt_normal,curvature);
+          }
+
+          waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
+          waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
+          waypoint_w_normal.normal_z = pt_normal[2];//n.normal_z = normals->points[idx].normal_z;//josh replace for target pt normal compute
+          if (waypoint_w_normal.normal_z<0)                                  //josh added temporary for nor3>0 condition
+          {                                                  //josh added temporary for nor3>0 condition
+              waypoint_w_normal.normal_x *= -1;//n.normal_x = normals->points[idx].normal_x*-1; //josh added temporary for nor3>0 condition
+              waypoint_w_normal.normal_y *= -1;//n.normal_y = normals->points[idx].normal_y*-1; //josh added temporary for nor3>0 condition
+              waypoint_w_normal.normal_z *= -1;//n.normal_z = normals->points[idx].normal_z*-1; //josh added temporary for nor3>0 condition
+          }                                                  //josh added temporary for nor3>0 condition
+          if (normal_flip_)     //user defined normal flip
+          {                    //user defined normal flip
+              waypoint_w_normal.normal_x *= -1;//user defined normal flip
+              waypoint_w_normal.normal_y *= -1;//user defined normal flip
+              waypoint_w_normal.normal_z *= -1;//user defined normal flip
+          }                    //user defined normal flip
+          waypoint_w_normal.x = tool_path_back_projected->points[i].x;
+          waypoint_w_normal.y = tool_path_back_projected->points[i].y;
+          waypoint_w_normal.z = tool_path_back_projected->points[i].z;
+
+
+          //--------------------------code ------------xavier getting the quaternion-----------------------
+          Eigen::Vector3d norm(waypoint_w_normal.normal_x, waypoint_w_normal.normal_y, waypoint_w_normal.normal_z);
+          Eigen::Quaterniond q;
+          q.setFromTwoVectors(Eigen::Vector3d(0,0,1), norm);
+          q.normalize();
+          //std::cout << "This normal" << norm.transpose() << std::endl;
+          //std::cout << "This quaternion consists of a scalar " << q.w() << " and a vector " << std::endl << q.vec().transpose() << std::endl;
+          Eigen::Matrix<double,3,3> rotationMatrix;
+          rotationMatrix = q.toRotationMatrix();
+          //std::cout << "This normal" << rotationMatrix << std::endl;
+          //Eigen::AngleAxisd newAngleAxis(rotationMatrix);
+          //Eigen::Vector3d euler = rotationMatrix.eulerAngles(0, 1, 2);
+
+          //manual calculations, still valid
+          Eigen::Vector3d angle;
+          double roll  = atan2( rotationMatrix(2,1),rotationMatrix(2,2) );
+          double pitch = atan2( -rotationMatrix(2,0), std::pow( rotationMatrix(2,1)*rotationMatrix(2,1) +rotationMatrix(2,2)*rotationMatrix(2,2) ,0.5  )  );
+          double yaw   = atan2( rotationMatrix(1,0),rotationMatrix(0,0) );
+          Eigen::Vector3d quat;
+          quat=q.vec();
+          angle[0]=roll*180/(std::atan(1.0)*4);
+          if (angle[0]>180){
+          //   angle[0]=angle[0]-360;
+          }
+          angle[1]=pitch*180/(std::atan(1.0)*4);
+          if (angle[1]>180){
+          //  angle[1]=angle[1]-360;
+          }
+          angle[2]=yaw*180/(std::atan(1.0)*4);
+          if (angle[2]>180){
+            //angle[2]=angle[2]-360;
+          }
+          //std::cout << "Euler from quaternion----------------------- "<< std::endl << roll << ';' << pitch << ';'<< yaw << std::endl;
+          //std::cout << " roll, pitch, yaw in degrees++++++++++++++++++"<< std::endl << angle << std::endl;
+
+          pcl::PointNormal waypoint_jump_w_normal;
+          waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
+          waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
+          waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
+          waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
+          waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
+          waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
+          waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
+          if (i==0)
+          {
+            fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                    waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                    angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                    q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+            toolpath_w_normal->push_back(waypoint_jump_w_normal);
+//          fout << final_point_tool_path->points[i].x - 60*n.normal_x << ';' << final_point_tool_path->points[i].y - 60*n.normal_y << ';' << final_point_tool_path->points[i].z - 60*n.normal_z  << ';' <<
+//                     n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                     q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] <<';' << '0'<<'\n';
+
+            //add current waypoint into toolpath
+            fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+                    waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+                    angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+                    q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '1'<<'\n';
+            toolpath_w_normal->push_back(waypoint_w_normal);
+//            fout << final_point_tool_path->points[i].x << ';' << final_point_tool_path->points[i].y << ';' << final_point_tool_path->points[i].z  << ';' <<
+//                       n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                       q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] <<';' << '1'<<'\n';
+          }
+
+          if(i<tp_size-1)
+          {
+            float gap_size = step_size_*5;//+1 so that the jump criteria is just slightly higher than normal expected pt2pt dist
+            pcl::PointNormal p1, p2;
+            p1.x = tool_path_back_projected->points[i].x;
+            p1.y = tool_path_back_projected->points[i].y;
+            p1.z = tool_path_back_projected->points[i].z;
+            p2.x = tool_path_back_projected->points[i+1].x; //p2.x = toolpath->points[i*2].x;  //p2.x = toolpath->points[i*10].x;
+            p2.y = tool_path_back_projected->points[i+1].y; //p2.y = toolpath->points[i*2].y;  //p2.y = toolpath->points[i*10].y;
+            p2.z = tool_path_back_projected->points[i+1].z; //p2.z = toolpath->points[i*2].z;  //p2.z = toolpath->points[i*10].z;
+            double pt2pt_dist = sqrt(pow(fabs(p1.x-p2.x),2)+pow(fabs(p1.y-p2.y),2)+pow(fabs(p1.z-p2.z),2));
+
+            //if (sqrt(pow((final_point_tool_path->points[i].x-final_point_tool_path->points[i+1].x),2.0)+pow((final_point_tool_path->points[i].y-final_point_tool_path->points[i+1].y),2.0)+pow((final_point_tool_path->points[i].z-final_point_tool_path->points[i+1].z),2.0))>Step_Size*5)//10)//without cbrt > 25
+            if(pt2pt_dist>gap_size)
+            {
+              fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+                      waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+                      angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+                      q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+              toolpath_w_normal->push_back(waypoint_w_normal);
+//            fout << final_point_tool_path->points[i].x << ';' << final_point_tool_path->points[i].y << ';' << final_point_tool_path->points[i].z  << ';' <<
+//                       n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                       q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] <<';' << '0'<<'\n';
+
+              fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                      waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                      angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                      q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+              toolpath_w_normal->push_back(waypoint_jump_w_normal);
+//            fout << final_point_tool_path->points[i].x-20*n.normal_x << ';' << final_point_tool_path->points[i].y-20*n.normal_y << ';' << final_point_tool_path->points[i].z-20*n.normal_z << ';' <<
+//                     n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                     q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] << ';' << '0' <<'\n';
+              //using p2 to store next point
+              p2.normal_x = waypoint_w_normal.normal_x; p2.x -= lift_height_*p2.normal_x;
+              p2.normal_y = waypoint_w_normal.normal_y; p2.y -= lift_height_*p2.normal_y;
+              p2.normal_z = waypoint_w_normal.normal_z; p2.z -= lift_height_*p2.normal_z;
+              fout << p2.x  << ';' << p2.y << ';' << p2.z << ';' <<
+                      p2.normal_x << ';' << p2.normal_y << ';' << p2.normal_z << ';' <<
+                      angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                      q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+              toolpath_w_normal->push_back(p2);
+//            fout << final_point_tool_path->points[i+1].x-20*n.normal_x << ';' << final_point_tool_path->points[i+1].y-20*n.normal_y << ';' << final_point_tool_path->points[i+1].z-20*n.normal_z << ';' <<
+//                     n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                     q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] << ';' << '0' <<'\n';
+            }
+            else
+            {
+              fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+                      waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+                      angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+                      q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '1'<<'\n';
+              toolpath_w_normal->push_back(waypoint_w_normal);
+//              fout << final_point_tool_path->points[i].x << ';' << final_point_tool_path->points[i].y << ';' << final_point_tool_path->points[i].z  << ';' <<
+//                         n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                         q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] <<';' << '1'<<'\n';
+            }
+          }
+
+          if (i> tp_size-2)
+          {
+            fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+                    waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+                    angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+                    q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+            toolpath_w_normal->push_back(waypoint_w_normal);
+//            fout << final_point_tool_path->points[i].x << ';' << final_point_tool_path->points[i].y << ';' << final_point_tool_path->points[i].z << ';' <<
+//                       n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                       q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] << ';' << '0' <<'\n';
+
+            fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                    waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                    angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                    q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+            toolpath_w_normal->push_back(waypoint_jump_w_normal);
+//            fout << final_point_tool_path->points[i].x-60*n.normal_x << ';' << final_point_tool_path->points[i].y-60*n.normal_y << ';' << final_point_tool_path->points[i].z-60*n.normal_z << ';' <<
+//                       n.normal_x << ';' << n.normal_y << ';' << n.normal_z << ';' << angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+//                       q.w() << ';' << quat[0] << ';' << quat[1] << ';' << quat[2] << ';' << '0' <<'\n';
+
+          }
+//------------------------------------------------------------------------------------------code--------------------------
+
+        }
+
+        pcl::io::savePCDFile("data/coupons/tool_path_back_projected_w_lift.pcd", *toolpath_w_normal);
+        //replaced with pt search //f.close();
+        fout.close(); //close the file
+
+        std::cout <<"debug point 4" << std::endl;
+        clock_t time7 = clock();//read timer
+        std::cout <<"Timing c, compute normal: " << std::fixed << std::setprecision(4) << float(time7-time3)/float(CLOCKS_PER_SEC) << "s" << std::endl;
+        std::cout <<"Total time taken for toolpath routine: " << std::fixed << std::setprecision(4) << float(time7-time1)/float(CLOCKS_PER_SEC) << "s" << std::endl;
+
+//        cluster_target_surface = target_surface;
+//        cluster_tool_path = final_point_tool_path;
+//        cluster_tool_path_normals =tool_path_normals;
+        //with offset ends here
+
+        return 0;
+    }//end try
+    catch(...)//default catch handler
+    {
+      std::string msg = "Zig Zag Failed, Please change zoom size or modify surface points.";
+      emit_signal ("toolpath_signal", "error msg\n"+msg);
+      std::cout << msg << std::endl;
+      //QMessageBox::information(NULL, "Oops", "Zig Zag Failed, Please change zoom size or modify surface points.");
+    }
+
+  }
+
 
   void ATG_TPG::emit_signal (std::string signal_name, std::string msg)
   {

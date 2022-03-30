@@ -35,6 +35,7 @@ class ATG_TPG
     pcl::PointCloud<pcl::PointXYZ>::Ptr Detect_Boundary(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
     int zigzag_toolpath(std::string filename);//input params to be filled, should return PointCloud data and Normals
     int contour_toolpath(std::string filename);//input params to be filled, should return PointCloud data and Normals
+    int point_toolpath(std::string filename, std::string filename1);//input params to be filled, should return PointCloud data and Normals
     void emit_signal (std::string signal_name, std::string msg = "");
 //    int Meridian_Masking                  (PointCloud<PointXYZ>::Ptr cloud, int External_on, int Internal_on, double zoom_size, Eigen::Vector4f centroid = {0,0,0,0});//xavier changes to user hole selection
 //    int Chuck_Masking                  (PointCloud<PointXYZ>::Ptr cloud, int External_on, int Internal_on, double chuck_speed, double feedrate, double zoom_size, Eigen::Vector4f centroid = {0,0,0,0});//xavier changes to user hole selection
