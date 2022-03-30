@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_env" value="$(find tool_model)/config/env_params.yaml" />
+  <xacro:property name="env" value="${load_yaml(filename_env)}" />
+
+  <!-- defining masking table-->
+  <link name="env">
+    <visual>
+      <geometry>
+        <mesh filename="package://tool_model/meshes/masking_table_simplified3.ply" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://tool_model/meshes/masking_table_simplified3.ply" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="env_joint" type="fixed">
+    <parent link = "base_link"/>
+    <child  link = "env"/>
+    <origin xyz = "${env['X']}  ${env['Y']}  ${env['Z']}"
+            rpy = "${env['R_']} ${env['P_']} ${env['Y_']}"/>
+    <!--origin xyz = "-0.130 -0.220 -0.025"
+            rpy = "${0.5*PI} 0.0 ${0.5*PI}"/--> <!--for simplified3-->
+  </joint>
+</robot>

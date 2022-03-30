@@ -1,0 +1,1 @@
+rosrun moveit_kinematics create_ikfast_moveit_plugin.py abb_irb1200_7_70 manipulator abb_irb1200_7_70_ikfast_manipulator_plugin /home/abb1200_ws2/src/abb_irb1200_7_70_ikfast_manipulator_plugin/src/abb_irb1200_7_70_manipulator_ikfast_solver.cpp

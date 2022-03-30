@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="scriptname_"  default=""/>
+  <arg name="robotIP_"  default=""/>
+  <arg name="robotPort_"  default=""/>
+  <node name="urscript_upload" type="urscript_upload" pkg="atg_robot_motion" output="screen">
+    <param name="scriptname" value="$(arg scriptname_)" />
+    <param name="robotIP" value="$(arg robotIP_)" />
+    <param name="robotPort" value="$(arg robotPort_)" />
+  </node>
+</launch>

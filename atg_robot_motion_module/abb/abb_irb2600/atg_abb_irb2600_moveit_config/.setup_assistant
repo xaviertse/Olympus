@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: atg_abb_irb2600_support
+    relative_path: urdf/irb2600_workspace.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/irb2600_workspace.srdf
+  CONFIG:
+    author_name: joshc
+    author_email: josh_chen@artc.a-star.edu.sg
+    generated_timestamp: 1618914067

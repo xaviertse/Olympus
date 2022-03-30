@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+
+  <!-- defining tool ATI Adapter Plate & Sensor-->
+  <link name="tool_model">
+    <!--visual>
+      <geometry>
+        <mesh filename="package://tool_model/meshes/ATI_9105_Adapter_plate.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.01" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual-->
+    <visual>
+      <geometry>
+        <mesh filename="package://tool_model/meshes/ATI_Tool_Spindle_Set.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <origin rpy="0 0 ${PI/2}" xyz="0 0 0.0105" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <!--visual>
+      <geometry>
+       <cylinder length="0.015" radius="${tcp['dia']}"/>
+      </geometry>
+      <origin rpy="0 ${PI/2} 0" xyz= "${tcp['x']} ${tcp['y']} ${tcp['z']-tcp['dia']}" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual-->
+  </link>
+  <joint name="tool_model_joint" type="fixed">
+    <parent link="controller_tool0" />
+    <child link="tool_model" />
+    <!--origin xyz="${0} ${0} ${0}" rpy="${0} ${PI} ${PI/4}"/-->
+    <origin xyz="${tcp['eeX']} ${tcp['eeY']} ${tcp['eeZ']}"
+            rpy="${tcp['eeR_']} ${tcp['eeP_']} ${tcp['eeY_']}"/>
+  </joint>
+
+  <xacro:property name="cyl_len" value="2"/>
+  <link name="tool"> <!-- will be used for last point calculation-->
+  <!--collision>
+    <geometry>
+      <cylinder length="${cyl_len}" radius="${0.020/2}"/>
+    </geometry>
+    <origin rpy="0 ${1.5708} 0" xyz= "${-cyl_len/2-0.05} 0 ${-0.08}" />
+  </collision-->
+  </link>
+  <joint name="flange_to_tool" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool" />
+          <!--origin xyz="${0.1378} 0 ${0.08821+0.0105}" rpy="0 ${PI/2} 0"  /-->
+          <!--origin xyz="${0.170939+x} ${0.000478131+y} ${0.0983167+z}" rpy="${0+a[rx]} ${PI/2+ry} ${0+rz}"  /-->
+          <!--origin xyz="${tcp['x']} ${tcp['y']} ${tcp['z']}"
+                  rpy="${tcp['rx']} ${tcp['ry']} ${tcp['rz']}"  /-->
+          <origin xyz="${tcp['X']} ${tcp['Y']} ${tcp['Z']}"
+                  rpy="${tcp['R_']} ${tcp['P_']} ${tcp['Y_']}"/>
+  </joint>
+  <disable_collisions link1="tool_model" link2="link6" reason="Adjacent" /> <!-- add this to srdf, its useless here-->
+</robot>

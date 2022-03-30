@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<library path="lib/libatg_ur10_descartes">
+<class name="atg_ur10_descartes/UR10RobotModel" type="atg_ur10_descartes::UR10RobotModel" base_class_type="descartes_core::RobotModel">
+<description>This is a Descartes robot model adapter for of the universal UR10 arm.</description>
+</class>
+</library>

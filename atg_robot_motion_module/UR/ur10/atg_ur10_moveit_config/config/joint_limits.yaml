@@ -1,0 +1,49 @@
+# joint_limits.yaml allows the dynamics properties specified in the URDF to be overwritten or augmented as needed
+# Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
+# Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
+joint_limits:
+  elbow_joint:
+    has_velocity_limits: true
+    max_velocity: 3.15
+    has_acceleration_limits: false
+    max_acceleration: 0
+  shoulder_lift_joint:
+    has_velocity_limits: true
+    max_velocity: 3.15
+    has_acceleration_limits: false
+    max_acceleration: 0
+    max_position: -0.436
+  shoulder_pan_joint:
+    has_velocity_limits: true
+    max_velocity: 3.15
+    has_acceleration_limits: false
+    max_acceleration: 0
+    #removed limit to let collision detection handle
+    #min_position: -3.22
+    #max_position: -0.830
+  wrist_1_joint:
+    has_velocity_limits: true
+    max_velocity: 3.2
+    has_acceleration_limits: false
+    max_acceleration: 0
+    #removed limit to let collision detection handle
+    #min_position: -2.3569
+    #max_position: -0.7854
+  wrist_2_joint:
+    has_velocity_limits: true
+    max_velocity: 3.2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  wrist_3_joint:
+    has_velocity_limits: true
+    max_velocity: 3.2
+    has_acceleration_limits: false
+    max_acceleration: 0
+    #min_position: -3.63
+    #max_position: -1.06
+    #removed limit to let collision detection handle
+    #max_position: -1.0472    #-60deg
+    #min_position: -3.75246   #-215deg
+    #max_position: -0.5472
+    #min_position: -4.25246
+
