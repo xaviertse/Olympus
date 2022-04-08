@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+   <!-- defining tool --><!-- Later, add collision models etc-->
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_tcp" value="$(find tool_model)/config/tcp_params.yaml" />
+  <xacro:property name="tcp" value="${load_yaml(filename_tcp)}" />
+
+  <!-- create a virutal link that is aligned actual tool orientation with robot controller -->
+  <!--link name="controller_tool0"/>
+  <joint name="controller_tool0_joint" type="fixed">
+    <parent link="ee_link"/>
+    <child link="controller_tool0"/>
+    <origin xyz="0 0 0" rpy="${-PI/2} 0  ${-PI/2}"/>
+  </joint-->
+
+  <xacro:property name="cyl_len" value="0.3"/>
+  <!-- defining tool EcoPen Adapter Plate & trunking-->
+  <link name="tool_model">
+    <visual>
+      <geometry>
+        <!--cylinder length="0.015" radius="${tcp['dia']}"/-->
+        <cylinder length="${cyl_len}" radius="${0.020/2}"/>
+      </geometry>
+      <origin rpy="0 ${0} 0" xyz= "0 0 ${-cyl_len/2-0.03}" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <visual>
+      <geometry>
+        <cylinder length="${cyl_len/2}" radius="${0.020}"/>
+      </geometry>
+      <origin rpy="0 ${0} 0" xyz= "0 0 ${-cyl_len-cyl_len/2/2-0.03}" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <!--visual>
+      <geometry>
+        <cylinder length="0.15" radius="${0.005/2}"/>
+      </geometry>
+      <origin rpy="0 ${0} 0" xyz= "0 0 ${+0.15/2}" />
+      <material name="Orange">
+        <color rgba="1.0 0.5 0 1.0"/>
+      </material>
+    </visual-->
+
+  </link>
+  <joint name="tool_model_joint" type="fixed">
+    <parent link="controller_tool0" /><!--parent link="tool_ori" /-->
+    <child link="tool_model" />
+    <!--origin xyz="${0} ${0} ${0}" rpy="${0} ${PI} ${PI/4}"/-->
+    <origin xyz="${tcp['eeX']} ${tcp['eeY']} ${tcp['eeZ']}"
+            rpy="${tcp['eeR_']} ${tcp['eeP_']} ${tcp['eeY_']}"/>
+  </joint>
+
+  <link name="tool_model2"> <!-- will be used for last point calculation-->
+    <visual>
+      <geometry>
+         <box size="0.03 0.08 0.15" />
+      </geometry>
+      <origin xyz="0 0 0.0751"
+              rpy="0 0 0"/>
+      <material name="LightGrey"/>
+    </visual>
+    <visual>
+      <geometry>
+         <box size="0.03 0.08 0.1" />
+      </geometry>
+      <origin xyz="0.035 0 ${0.15+0.025}"
+              rpy="0 0.7854 0"/>
+      <material name="LightGrey"/>
+    </visual>
+  </link>
+  <joint name="tool_model_joint2" type="fixed">
+    <parent link="controller_tool0" /><!--parent link="tool_ori" /-->
+    <child link="tool_model2" />
+    <origin xyz="${0} ${0} ${0}"
+            rpy="0 0 0"/>
+  </joint>
+  <disable_collisions link1="tool_model2" link2="tool_model" reason="Never" /> <!-- add this to srdf, its useless here-->
+
+  <!--xacro:include filename="$(find tool_model)/urdf/tcp_origin_viz.xacro" /-->
+
+  <link name="tool"> <!-- will be used for last point calculation-->
+
+  </link>
+  <joint name="flange_to_tool" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool" />
+          <!--origin xyz="0 0.16 0.2165" rpy="0 0 0"/-->
+          <origin xyz="${tcp['X']} ${tcp['Y']} ${tcp['Z']}"
+                  rpy="${tcp['R_']} ${tcp['P_']} ${tcp['Y_']}"/>
+  </joint>
+
+  <link name="tool_offset"> <!-- can use this to temporary find offset value, set view to controller_tool0 and view tool_offset pose in RViz-->
+  </link>
+  <joint name="tool_ori_to_tool" type="fixed">
+        <parent link="tool_model" />
+        <child link="tool_offset" />
+        <origin xyz="0 0 ${0.3}"
+                rpy="0 0 0"/>
+  </joint>
+
+  <link name="tool_model3">
+    <visual>
+      <geometry>
+        <cylinder length="${0.3}" radius="${0.010/2}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz= "0 0 ${-0.3/2}" />
+
+      <material name="LightOrange">
+        <color rgba="1.0 0.6 0.0 0.5"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="tool_model_joint3" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool_model3" />
+          <!--origin xyz="0 0.16 0.2165" rpy="0 0 0"/-->
+          <origin rpy="${tcp['eeR_']} ${tcp['eeP_']} ${tcp['eeY_']}" xyz= "${tcp['X']} ${tcp['Y']} ${tcp['Z']}" />
+
+  </joint>
+
+  <disable_collisions link1="controller_tool0" link2="link6" reason="Adjacent" /> <!-- add this to srdf, its useless here-->
+</robot>

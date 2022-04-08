@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="robot_setup_config_name" default="ur10" />
+  <node name="atg_robot_motion_node" type="atg_robot_motion_node" pkg="atg_robot_motion" output="screen">
+    <param name="group_name" value="manipulator"/>
+    <param name="tip_link" value="tool"/>
+    <param name="base_link" value="base_link"/>
+    <param name="world_frame" value="world"/>
+    <param name="trajectory/time_delay" value="0.001"/>
+    <!-- <rosparam param="trajectory/seed_pose">[-3.1415, -1.645, -2.1436 , -0.92, 1.5707, -0.038]</rosparam> -->
+    <rosparam command="load" file="$(find atg_ur10_moveit_config)/config/initial_params.yaml" />
+    <!--rosparam if="$(eval robot_setup_config_name == 'ur10')" command="load" file="$(find atg_ur10_moveit_config)/config/initial_params.yaml" />
+    <rosparam if="$(eval robot_setup_config_name == 'ur10e')" command="load" file="$(find atg_ur10_e_moveit_config)/config/initial_params.yaml" />
+    <rosparam command="load" file="$(find masking)/config/abbirb2400_params.yaml" /-->
+    <param name="visualization/min_point_distance" value="0.01"/>
+    <param name="robot_setup_config_name" value="ur10" /> <!-- for init_descartes robot_model-->
+  </node>
+</launch>

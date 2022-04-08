@@ -1,0 +1,261 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="ur10_masking" >
+
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- common stuff -->
+  <!-- <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" /> -->
+
+  <!-- ur10 -->
+  <xacro:include filename="$(find ur_description)/urdf/ur10.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur10_robot prefix="" joint_limited="true"/>
+
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${PI}" />
+  </joint>
+
+  <link name="table" >
+    <visual>
+      <geometry>
+        <mesh filename="package://atg_ur10_support/meshes/masking_table_simplified3.ply" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://atg_ur10_support/meshes/masking_table_simplified3.ply" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="table_joint" type="fixed">
+    <parent link="base_link" />
+    <child link = "table" />
+    <!--Trandformation for the position of the table to line up with the UR10 -->
+    <!--<origin xyz="-0.645 -0.315 -0.815" rpy="${0.5*PI} 0.0 ${0.5*PI}"/> -->
+    <!--<origin xyz="-0.6465 -0.320 -0.815" rpy="${0.5*PI} 0.0 ${0.5*PI}"/>--> <!--for simplified2-->
+    <origin xyz="-0.130 -0.220 -0.025" rpy="${0.5*PI} 0.0 ${0.5*PI}"/> <!--for simplified3-->
+  </joint>
+
+  <!-- defining tool -->
+  <link name="tool"> 
+  <!-- Later, add collision models etc-->
+  </link>
+
+  <!-- defining tool -->
+  <link name="controller_tool0">
+    <visual>
+      <geometry>
+         <mesh filename="package://atg_ur10_support/meshes/masking_eco_pen.ply" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <origin xyz="${0} ${0} ${0.037}" rpy="0 0 0"/>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+        <geometry>
+           <mesh filename="package://atg_ur10_support/meshes/masking_eco_pen.ply" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <origin xyz="${0} ${0} ${0.037}" rpy="0 0 0"/>
+    </collision>
+    <!-- eco pen cable, visual geometry r = 15mm but collision set to r = 50mm-->
+    <visual>
+      <geometry>
+        <cylinder radius="0.015" length="0.15"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${-0.11}" rpy="0 0 0"/>
+      <material name="Black_25">
+        <color rgba="0.25 0.25 0.25 1"/>
+      </material>
+    </visual>
+    <collision>
+        <geometry>
+        <cylinder radius="0.05" length="0.15"/>
+        </geometry>
+        <origin xyz="${0} ${0.16} ${-0.11}" rpy="0 0 0"/>
+    </collision>
+    <!-- eco pen cable trunk plate -->
+    <visual>
+      <geometry>
+        <box size="0.15 0.05 0.002"/>
+      </geometry>
+      <origin xyz="${0.15/2} ${0.05/2} ${0.022}" rpy="0 0 0"/>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.15 0.05 0.002"/>
+      </geometry>
+      <origin xyz="${0.15/2} ${0.05/2} ${0.022}" rpy="0 0 0"/>
+    </collision>
+    <!-- eco pen cable trunk-->
+    <visual>
+      <geometry>
+        <cylinder radius="0.02" length="0.15"/>
+      </geometry>
+      <origin xyz="${0.15-0.025} ${0.05/2} ${-0.15/3}" rpy="0 0 0"/>
+      <material name="Black_25"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.02" length="0.15"/>
+      </geometry>
+      <origin xyz="${0.15-0.025} ${0.05/2} ${-0.15/3}" rpy="0 0 0"/>
+    </collision>
+
+    <!--disk-->
+    <!--<visual>
+      <geometry>
+        <cylinder radius="0.015" length="0.003"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${0.2165-0.003/2}" rpy="0 0 0"/>
+      <material name="Green">
+        <color rgba="0.15 0.5 0.15 1"/>
+      </material>
+    </visual>-->
+    <!--rod-->
+    <!--<visual>
+      <geometry>
+        <cylinder radius="0.002" length="0.03"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${0.2165-0.03/2-0.003}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>-->
+    <!--grip-->
+    <!--<visual>
+      <geometry>
+        <cylinder radius="0.005" length="0.03"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${0.2165-0.03/2-0.03-0.003}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>-->
+    <!--handle-->
+    <!--<visual>
+      <geometry>
+        <cylinder radius="0.015" length="0.2"/>
+      </geometry>
+      <origin xyz="${0} ${0.16} ${0.2165-0.2/2-0.03-0.03-0.003}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>-->
+    <!--mount plate-->
+    <visual>
+      <geometry>
+        <box size="0.1 0.25 0.02"/>
+      </geometry>
+      <origin xyz="${0} ${0.16/2} ${0.02/2}" rpy="0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+  <!--  <visual>
+      <geometry>
+        <box size="0.001 0.16 0.2165"/>
+      </geometry>
+      <origin xyz="${0.001/2} ${0.16/2} ${0.2165/2}" rpy="0 0 0"/>
+      <material name="Blue">
+        <color rgba="0.0 0.0 1.0 0.75"/>
+      </material>
+    </visual>
+    <collision>
+        <geometry>
+          <box size="0.001 0.16 0.2165"/>
+        </geometry>
+        <origin xyz="${0.001/2} ${0.16/2} ${0.2165/2}" rpy="0 0 0"/>
+    </collision>-->
+  </link>
+
+  <!-- create a virutal link that is aligned with tool0 on the UR robot controller -->
+  <joint name="controller_tool0" type="fixed">
+    <parent link="ee_link"/>
+    <child link="controller_tool0"/>
+    <origin xyz="0 0 0" rpy="${-PI/2} 0 ${-PI/2}"/>
+  </joint>  
+
+  <joint name="flange_to_tool" type="fixed">
+    <parent link="controller_tool0"/>
+    <child link="tool"/>
+    <!-- <origin xyz="0 0.16 0.2165" rpy="0 0 0"/> -->
+    <!-- <origin xyz="0 0.16 0.2165" rpy="${PI/2} 0 0"/> -->
+    <!--<origin xyz="0 0.16 0.2165" rpy="${-PI} 0 0"/>-->
+    <origin xyz="0 0.16 0.2165" rpy="0 0 0"/>
+
+
+  </joint>  
+
+</robot>
+
+
+  <!-- old tool -->
+
+<!-- <xacro:property name="flange_radius" value="0.04"/>
+  <xacro:property name="flange_offset" value="0.08"/>
+  <xacro:property name="tool_tip_width" value="0.005"/>
+  <xacro:property name="tool_tip_length" value="0.08"/>
+  <xacro:property name="tool_extent_width" value="0.04"/>
+  <xacro:property name="tool_extent_length" value="0.02"/>
+  <xacro:property name="tool_body_width" value="0.04"/>
+  <xacro:property name="tool_body_length" value="0.06"/>
+  <xacro:property name="tool_length" value="${0.5*tool_body_length + tool_tip_length}"/> -->
+
+
+  <!-- <link name="tool">
+    <visual>
+     <origin xyz="0.0 -0.02 -0.11" rpy="0 0 ${0.5*PI}"/>
+      <geometry>
+        <mesh filename="package://ur10_masking_support/meshes/stylus_tool.stl"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba="0.8 0.8 0.6 1"/>
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 ${- tool_tip_length - 0.5*tool_body_length}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${tool_body_width} ${tool_body_width} ${tool_body_length}"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba="1 1 0 1"/>
+      </material>
+    </collision>
+    <collision>
+      <origin xyz="0 ${-0.5*tool_extent_length} ${-tool_tip_length - 0.5*tool_body_length}" rpy="${-0.5*PI} 0 0"/>
+      <geometry>
+        <cylinder radius="${0.5*tool_extent_width}" length="${tool_extent_length}"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba="1 1 0 1"/>
+      </material>
+    </collision>
+    <collision>
+      <origin xyz="0 0 ${-0.5 * tool_tip_length}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${tool_tip_width}" length="${tool_tip_length}"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba="1 1 0 1"/>
+      </material>
+    </collision>
+
+  </link>
+ 
+
+  <joint name="flange_to_tool" type="fixed">
+    <parent link="ee_link"/>
+    <child link="tool"/>
+    <origin xyz="${tool_extent_length} 0 ${tool_length}" rpy="0 0 ${-0.5*PI}"/>
+  </joint> -->

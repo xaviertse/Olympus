@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_obj" value="$(find tool_model)/config/obj_frame.yaml" />
+  <xacro:property name="obj_frame" value="${load_yaml(filename_obj)}" />
+
+  <material name="orange">
+    <color rgba="${230/255} ${180/255} ${180/255} 1"/>
+  </material>
+
+  <link name="coupon" >
+    <visual>
+      <geometry>
+      <!--mesh filename="package://tool_model/meshes/pclmini.ply" scale="1 1 1"/>
+      <mesh filename="file:///home/data/cache/pclmini.ply" scale="1 1 1"/-->
+      <mesh filename="file://${obj_frame['coupon_file']}" scale="1 1 1"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <collision>
+      <geometry>
+        <!--mesh filename="package://tool_model/meshes/pclmini.ply" scale="1 1 1"/>
+        <mesh filename="file:///home/data/cache/pclmini.ply" scale="1 1 1"/-->
+        <mesh filename="file://${obj_frame['coupon_file']}" scale="1 1 1"/>
+      </geometry>
+    </collision>
+
+    <!--collision>
+      <geometry>
+         <box size="0.01 2 2.5" />
+      </geometry>
+      <origin rpy="0 0 0" xyz= "-0.20 ${-2/2-0.1+0.3} 0" />
+    </collision>
+
+    <collision>
+      <geometry>
+         <box size="0.01 2 2.5" />
+      </geometry>
+      <origin rpy="0 0 0" xyz= "0.5 ${-2/2-0.1+0.3} 0" />
+    </collision-->
+
+  </link>
+
+  <joint name="coupon_joint" type="fixed">
+    <parent link="base" />
+    <child link = "coupon" />
+    <!--origin xyz="${obj_frame['x']} ${obj_frame['y']} ${obj_frame['z']}" rpy="${obj_frame['rx']} ${obj_frame['ry']} ${obj_frame['rz']}"  /-->
+    <origin xyz="${obj_frame['X']} ${obj_frame['Y']} ${obj_frame['Z']}" rpy="${obj_frame['R_']} ${obj_frame['P_']} ${obj_frame['Y_']}"  />
+  </joint>
+</robot>

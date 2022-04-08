@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<library path="lib/libabb_irb1200_7_70_descartes">
+  <class name="abb_irb1200_7_70_descartes/AbbIrb1200RobotModel" type="abb_irb1200_7_70_descartes::AbbIrb1200RobotModel" base_class_type="descartes_core::RobotModel">
+    <description>This is a robot model adapter for of the abb irb1200 for descartes robot model. </description>
+  </class>
+</library>

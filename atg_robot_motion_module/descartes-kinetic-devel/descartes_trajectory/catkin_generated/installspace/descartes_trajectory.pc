@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: descartes_trajectory
+Description: Description of descartes_trajectory
+Version: 0.0.1
+Cflags: -I/usr/local/include -I/usr/include -I/usr/local/include/eigen3
+Libs: -L/usr/local/lib -ldescartes_trajectory
+Requires: descartes_core moveit_core roscpp

@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: atg_ur10_support
+    relative_path: urdf/ur10e_workspace.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/ur10e_workspace.srdf
+  CONFIG:
+    author_name: joshc
+    author_email: josh_chen@artc.a-star.edu.sg
+    generated_timestamp: 1618250264

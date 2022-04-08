@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<library path="lib/libatg_ur5e_descartes">
+<class name="atg_ur5e_descartes/UR5ERobotModel" type="atg_ur5e_descartes::UR5ERobotModel" base_class_type="descartes_core::RobotModel">
+<description>This is a Descartes robot model adapter for of the universal UR5E arm.</description>
+</class>
+</library>
