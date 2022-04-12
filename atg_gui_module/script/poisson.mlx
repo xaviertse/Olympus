@@ -21,7 +21,7 @@
     <Param name="DeleteFaces" value="true" type="RichBool"/>
   </filter>
   <filter name="Re-Orient all faces coherentely"/>
-  <!--filter name="Invert Faces Orientation">
+  <filter name="Invert Faces Orientation">
     <Param type="RichBool" value="true" name="forceFlip"/>
-   </filter-->
+   </filter>
 </FilterScript>

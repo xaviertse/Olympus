@@ -515,7 +515,20 @@ void ATG_Window::readQSettings() //read settings when value change
     readValue = settings.value(property_name+"/param/step_size", "0").toString();
     ui.doubleSpinBox_impedance_step_size->setValue(readValue.toDouble());
 
-    property_name = "tab_impedance_tool";
+    property_name = "tab_ndt_tool";
+    readValue = settings.value(property_name+"/param/feedrate", "10").toString();
+    ui.doubleSpinBox_ndt_feedrate->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/flowrate", "1").toString();
+    ui.doubleSpinBox_ndt_flowrate->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/lift_speed", "50").toString();
+    ui.doubleSpinBox_ndt_lift_speed->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/lift_height", "30").toString();
+    ui.doubleSpinBox_ndt_lift_height->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/blend", "0").toString();
+    ui.doubleSpinBox_ndt_blend_radius->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/wait", "0").toString();
+    ui.doubleSpinBox_ndt_wait->setValue(readValue.toDouble());
+
     readValue = settings.value("Settings/Robot/Robot", "0").toString();
     ui.comboBox_robot_selection->setCurrentIndex(readValue.toDouble());
     readValue = settings.value("Settings/Robot/Tool", "0").toString();
@@ -530,7 +543,7 @@ void ATG_Window::readQSettings() //read settings when value change
 
     readQSettings_TCP_only();
     readQSettings_ENV_OBJ_only();
-    readQSettings_TCP_only();
+    readQSettings_Robot_IP_only();
 
     restoreGeometry(settings.value("geometry").toByteArray()); //port over from original readsettings
     restoreState(settings.value("windowState").toByteArray()); //port over from original readsettings
@@ -555,6 +568,8 @@ void ATG_Window::readQSettings_TCP_only()//read TCP and eeTCP only
   {X="0.59",Y="-2.1",Z="344.44",R_="0",P_="0",Y_="0",eeX="0",eeY="0",eeZ="0",eeR_="0",eeP_="0",eeY_="0";}
   if(tool_selection=="Sandblasting Nozzle Tool")
   {X="123.06",Y="0",Z="345.54",R_="0",P_="45",Y_="0",eeX="16.99",eeY="0",eeZ="239.47",eeR_="0",eeP_="45",eeY_="0";}
+  if(tool_selection=="NDT Tool")
+  {X="0",Y="0",Z="170",R_="0",P_="0",Y_="0",eeX="0",eeY="0",eeZ="0",eeR_="0",eeP_="0",eeY_="0";}
 
   readValue = settings.value(tool_selection+"/tcp/X", X).toString();
   ui.doubleSpinBox_robot_tcp_X->setValue(readValue.toDouble());
@@ -730,6 +745,13 @@ void ATG_Window::writeQSettings() //write settings when value change
     settings.setValue(property_name+"/param/step_size",  QString::number(ui.doubleSpinBox_impedance_step_size   ->value(),'f',2));
     settings.setValue(property_name+"/param/blend",      QString::number(ui.doubleSpinBox_impedance_blend_radius->value(),'f',2));
 
+    property_name = "tab_ndt_tool";
+    settings.setValue(property_name+"/param/feedrate",   QString::number(ui.doubleSpinBox_ndt_feedrate    ->value(),'f',2));
+    settings.setValue(property_name+"/param/flowrate",   QString::number(ui.doubleSpinBox_ndt_flowrate    ->value(),'f',2));
+    settings.setValue(property_name+"/param/lift_speed", QString::number(ui.doubleSpinBox_ndt_lift_speed  ->value(),'f',2));
+    settings.setValue(property_name+"/param/lift_height",QString::number(ui.doubleSpinBox_ndt_lift_height ->value(),'f',2));
+    settings.setValue(property_name+"/param/blend",      QString::number(ui.doubleSpinBox_ndt_blend_radius->value(),'f',2));
+    settings.setValue(property_name+"/param/wait",       QString::number(ui.doubleSpinBox_ndt_wait        ->value(),'f',2));
 
     settings.setValue("Settings/Robot/Robot",    QString::number(ui.comboBox_robot_selection ->currentIndex()));
     settings.setValue("Settings/Robot/Tool",     QString::number(ui.comboBox_tool_selection  ->currentIndex()));
@@ -1476,7 +1498,7 @@ void ATG_Window::comboBox_tool_selection_clicked(QString value)
     }
     else if(ui.comboBox_tool_selection->currentText()=="NDT Tool")
     {
-      ui.tabWidget_robot_setup->insertTab(last,ui.tab_masking_tool,"Masking Tool");//TODO NDT Tool
+      ui.tabWidget_robot_setup->insertTab(last,ui.tab_ndt_tool,"NDT Tool");
       std::cout << "NDT Tool Selected" << std::endl;
     }
     else
@@ -2233,7 +2255,7 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
   }
   else if(ui.comboBox_tool_selection->currentText()=="NDT Tool")
   {
-    Lift_Height = ui.doubleSpinBox_masking_lift_height->value();//TODO NDT Tool param's page
+    Lift_Height = ui.doubleSpinBox_ndt_lift_height->value();
   }
   else
   {
@@ -2544,10 +2566,10 @@ void ATG_Window::pushButton_queue_clicked()
   }
   else if(ui.comboBox_tool_selection->currentText()=="NDT Tool")
   {
-    feedrate  = std::to_string(ui.doubleSpinBox_masking_feedrate    ->value());//TODO NDT Tool
-    blend_zone= std::to_string(ui.doubleSpinBox_masking_blend_radius->value());//TODO NDT Tool
-    lift_spd  = std::to_string(ui.doubleSpinBox_masking_lift_speed  ->value());//TODO NDT Tool
-    opt1      = std::to_string(ui.doubleSpinBox_masking_flowrate    ->value());//TODO NDT Tool
+    feedrate  = std::to_string(ui.doubleSpinBox_ndt_feedrate    ->value());
+    blend_zone= std::to_string(ui.doubleSpinBox_ndt_blend_radius->value());
+    lift_spd  = std::to_string(ui.doubleSpinBox_ndt_lift_speed  ->value());
+    opt1      = std::to_string(ui.doubleSpinBox_ndt_flowrate    ->value());
     process   = "NDT";
     cmd = "#Line1:Comments Line2:filename;process;tcp_info Line3:feedrate;blend/zone radius;lift_spd;flowrate;0;0;0; Line4:obj pose from base frame; Subsequent points are actual points on the coupon";
   }
