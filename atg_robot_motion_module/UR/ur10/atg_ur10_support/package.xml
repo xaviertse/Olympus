@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>atg_ur10_support</name>
+  <version>0.0.0</version>
+  <description>The atg_ur10_support package</description>
+  <maintainer email="josh_chen@artc.a-star.edu.sg">JoshC</maintainer>
+  <author>JoshC</author>
+  <license>
+  Copyright (c) 2021 Advanced Robotic Applications
+  Advanced Remanufacturing and Technology Centre
+  A*STAR Research Entities (Co. Registration No. 199702110H)
+  </license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>

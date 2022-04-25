@@ -1,0 +1,18 @@
+manipulator:
+  #kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  kinematics_solver: godel_abb_irb2400_manipulator_kinematics/IKFastKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.01 #0.005
+  kinematics_solver_attempts: 4
+#manipulator2:
+#  #kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+#  kinematics_solver: abb_irb2400_descartes/AbbIrb2400RobotModel
+#  kinematics_solver_search_resolution: 0.005
+#  kinematics_solver_timeout: 0.01 #0.005
+#  kinematics_solver_attempts: 4
+#manipulator3:
+#  #kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+#  kinematics_solver: abb_irb2400_manipulator_kinematics/IKFastKinematicsPlugin
+#  kinematics_solver_search_resolution: 0.005
+#  kinematics_solver_timeout: 0.01 #0.005
+#  kinematics_solver_attempts: 4

@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="ur10_masking" >
+
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- common stuff -->
+  <!-- <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" /> -->
+
+  <!-- ur10 -->
+  <xacro:include filename="$(find ur_description)/urdf/ur10.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur10_robot prefix="" joint_limited="true"/>
+
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${PI}" />
+  </joint>
+
+  <link name="table" >
+    <visual>
+      <geometry>
+      <mesh filename="package://tool_model/meshes/BasePlateTestbed.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+      <mesh filename="package://tool_model/meshes/BasePlateTestbed.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="table_joint" type="fixed">
+    <parent link="base_link" />
+    <child link = "table" />
+    <!--Trandformation for the position of the table to line up with the UR10 -->
+    <origin rpy="0 3.14159 3.92699" xyz= "-0.28284271 0.14142136 0" />
+  </joint>
+
+  <!-- defining tool -->
+  <link name="tool"> 
+  <!-- Later, add collision models etc-->
+  </link>
+  <link name="tool_pre_rotate">
+        <!-- Later, add collision models etc-->
+  </link>
+
+  <!-- defining tool -->
+  <link name="controller_tool0">
+  <!-- pen marker-->
+      <visual>
+        <geometry>
+           <mesh filename="package://tool_model/meshes/Toolholder_Pen.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <origin rpy="0 3.14159 0.785398" xyz="0 0 0" />
+        <material name="LightGrey"/>
+      </visual>
+      <collision>
+          <geometry>
+             <mesh filename="package://tool_model/meshes/Toolholder_Pen.stl" scale="0.001 0.001 0.001"/>
+          </geometry>
+          <origin rpy="0 3.14159 0.785398" xyz="0 0 0" />
+      </collision>
+      <visual>
+        <geometry>
+           <mesh filename="package://tool_model/meshes/Fabric_Pen.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <origin rpy="3.14159 0 0" xyz="-0.044 -0.044 0.152" />
+        <material name="LightGrey"/>
+      </visual>
+  </link>
+
+  <!-- create a virutal link that is aligned with tool0 on the UR robot controller -->
+  <joint name="controller_tool0" type="fixed">
+    <parent link="ee_link"/>
+    <child link="controller_tool0"/>
+    <origin xyz="0 0 0" rpy="${-PI/2} 0 ${-PI/2}"/>
+  </joint>
+
+  <!--<joint name="flange_to_tool" type="fixed">
+    <parent link="controller_tool0"/>
+    <child link="tool"/>
+    <origin xyz="0 0.16 0.2165" rpy="0 0 0"/>
+  </joint>-->
+  <joint name="flange_to_tool" type="fixed">
+          <parent link="controller_tool0" />
+          <child link="tool_pre_rotate" />
+          <!-- <origin xyz="0 0.16 0.2165" rpy="0 0 0"/> -->
+          <!-- <origin xyz="0 0.16 0.2165" rpy="${PI/2} 0 0"/> -->
+          <origin xyz="0 0 0" rpy="0 0 2.35619"  />
+  </joint>
+
+  <joint name="flange_to_tool2" type="fixed">
+          <parent link="tool_pre_rotate" />
+          <child link="tool" />
+          <!-- <origin xyz="0 0.0622 0.135" rpy="0 0 0"  /> -->
+          <origin xyz="0 0.0622 0.152" rpy="0 0 0"  />
+  </joint>
+
+</robot>

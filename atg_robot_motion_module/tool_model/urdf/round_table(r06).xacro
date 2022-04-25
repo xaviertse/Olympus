@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <!-- load tcp_params for tilt-->
+  <xacro:property name="filename_env" value="$(find tool_model)/config/env_params.yaml" />
+  <xacro:property name="env" value="${load_yaml(filename_env)}" />
+
+  <!-- defining masking table-->
+  <link name="env">
+    <visual>
+      <geometry>
+       <cylinder length="0.05" radius="0.6"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.05" radius="0.6"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="env_joint" type="fixed">
+    <parent link = "base_link"/>
+    <child  link = "env"/>
+    <origin xyz = "${env['X']}  ${env['Y']}  ${env['Z']}"
+            rpy = "${env['R_']} ${env['P_']} ${env['Y_']}"/>
+    <!--<origin rpy="0 0 0"
+                xyz= "1.0 0.5 0.5" />--> <!--for simplified3-->
+  </joint>
+</robot>

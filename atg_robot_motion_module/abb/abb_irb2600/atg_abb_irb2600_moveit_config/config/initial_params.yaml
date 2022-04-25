@@ -1,0 +1,9 @@
+#added by ATG for setup/sim launch
+initial_joint_state: [-0.00688,-0.77160,0.97297,0.12127,-0.05921,0.06441]
+trajectory/seed_pose: [-0.00688,-0.77160,0.97297,0.12127,-0.05921,0.06441]
+masking_tool_velocity: 20 # mm/s default 30
+
+#-3.19 
+#initial_joint_state: [0.70662,0.17005,0.09652,0.05809,0,0]
+#trajectory/seed_pose: [0.70662,0.17005,0.09652,0.05809,0,0]
+#masking_tool_velocity: 20 # mm/s default 30
