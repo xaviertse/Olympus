@@ -205,7 +205,7 @@ namespace ATG_surface_identification
       std::cout << "Cloud reading failed. Wrong file format" << src_filename << std::endl;
       exit(1);
     }
-    pcl::io::savePCDFileASCII <pcl::PointXYZ> ("coupon_whole.pcd", cloud_origin);
+    pcl::io::savePCDFileASCII <pcl::PointXYZ> ("coupon_whole.pcd", *cloud_origin);
     return (cloud_origin);
   }
 

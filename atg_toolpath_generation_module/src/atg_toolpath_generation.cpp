@@ -161,7 +161,7 @@ namespace ATG_toolpath_generation
   }
 
 //-------------------------------------------------------------------------POINT-----------------------------------------------------------
-  pcl::PointCloud<pcl::PointXYZ>::Ptr ATG_TPG::Point(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+  int ATG_TPG::Point(std::string filename)
   {
 
     // ===== 1. Load variables
@@ -174,6 +174,16 @@ namespace ATG_toolpath_generation
     // ===== 6.2 calculate for individual point's normal from coupon data, and flip for correction
     // ===== 6.3 calculate for individual point's quat and rpy
 
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+    if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *cloud) == -1)
+    {
+      std::cout << "Failed to read PCD file from: " << filename << std::endl;
+      exit(1);
+    }
+    //int sorted_on = 1;//permanent on now
+    //double offset = 0;//superceded
+    double depth = 0;
 
     // ===== 1. Load variables, done before this function call, this is just for displaying the variables
     // =======================
@@ -196,7 +206,7 @@ namespace ATG_toolpath_generation
 
     std::string output_filename = "data/coupons/tool_path_back_projected_w_lift_n_trigger.txt";                           //final tool path file
     std::ofstream fout(output_filename);
-    pcl::io::loadPCDFile <pcl::PointXYZ> ("coupon_whole.pcd", *cloud_origin);
+    pcl::io::loadPCDFile <pcl::PointXYZ> ("data/coupons/coupon_whole.pcd", *cloud_origin);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::VoxelGrid<pcl::PointXYZ> sor;
     sor.setInputCloud(cloud_origin);
