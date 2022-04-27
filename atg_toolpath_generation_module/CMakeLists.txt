@@ -46,5 +46,5 @@ target_link_libraries(atg_toolpath_contour ${PROJECT_NAME} ${catkin_LIBRARIES})
 add_executable(atg_toolpath_zigzag src/atg_toolpath_zigzag.cpp)
 target_link_libraries(atg_toolpath_zigzag ${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(atg_toolpath_zigzag src/atg_toolpath_point.cpp)
+add_executable(atg_toolpath_point src/atg_toolpath_point.cpp)
 target_link_libraries(atg_toolpath_point ${PROJECT_NAME} ${catkin_LIBRARIES})
