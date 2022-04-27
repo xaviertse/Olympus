@@ -430,7 +430,6 @@ namespace ATG_toolpath_generation
 //          //emit progressUpdated(progresspct);
 //          emit_signal ("toolpath_signal", std::to_string(progresspct));
 //          std::cout << "\rEMIT progressUpdate"<< progresspct     normal_estimator.setInputCloud(cloud);
-<<" ";
 //        }
 //      }
       //need to emit 50-100%
@@ -626,7 +625,7 @@ namespace ATG_toolpath_generation
         fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
                 waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
                 a11 << ';' << a12 << ';' << a13 << ';' <<
-                q11 << ';' << q12 << ';' << q1Detect_Boundary3 << ';' << q14 << ';'<<'0'<< '\n';
+                q11 << ';' << q12 << ';' << q13 << ';' << q14 << ';'<<'0'<< '\n';
         toolpath_w_normal->push_back(waypoint_w_normal);
 
 //        fout << x11 << ';' << y11 << ';' << z11 << ';' << n11 << ';' << n12 << ';'<< n13 <<';'<<
@@ -672,7 +671,7 @@ namespace ATG_toolpath_generation
         f22.close();
         fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
                 waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
-                a11 << ';' << a12 << ';' << a1Detect_Boundary3 << ';' <<
+                a11 << ';' << a12 << ';' << a13 << ';' <<
                 q11 << ';' << q12 << ';' << q13 << ';' << q14 << ';'<<'0'<< '\n';
         toolpath_w_normal->push_back(waypoint_w_normal);
 //        fout << x11 << ';' << y11 << ';' << z11 << ';' << n11 << ';' << n12 << ';'<< n13 <<';'<<
