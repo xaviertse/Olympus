@@ -4,7 +4,8 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/boundary.h>
-
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/extract_indices.h>
 namespace ATG_toolpath_generation
 {
   ATG_TPG::ATG_TPG(){}
@@ -175,6 +176,7 @@ namespace ATG_toolpath_generation
     // ===== 6.3 calculate for individual point's quat and rpy
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PCLPointCloud2::Ptr cloud_blob (new pcl::PCLPointCloud2), cloud_filtered_blob (new pcl::PCLPointCloud2), cloud_origin (new pcl::PCLPointCloud2);
 
     if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *cloud) == -1)
     {
@@ -206,12 +208,14 @@ namespace ATG_toolpath_generation
 
     std::string output_filename = "data/coupons/tool_path_back_projected_w_lift_n_trigger.txt";                           //final tool path file
     std::ofstream fout(output_filename);
-    pcl::io::loadPCDFile <pcl::PointXYZ> ("data/coupons/coupon_whole.pcd", *cloud_origin);
+
+    pcl::io::loadPCDFile ("data/coupons/coupon_whole.pcd", *cloud_origin);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::VoxelGrid<pcl::PointXYZ> sor;
+    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
     sor.setInputCloud(cloud_origin);
     sor.setLeafSize(0.005f, 0.005f, 0.05f);
-    sor.filter(*cloud_downsampled);
+    sor.filter(*cloud_filtered_blob);
+    pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_downsampled);
     // Calculate Normals
 //    std::cout << "Calculate Normals ...\n";
 //    pcl::search::Search<pcl::PointXYZ>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> >(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -226,18 +230,27 @@ namespace ATG_toolpath_generation
     for (size_t i = 0; i < cloud->points.size(); i++)
       {
          //Radial search for estimating neighborhood indices
-         pcl::KdTreeFLANN<PointT> kdtree;
+         pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
          kdtree.setInputCloud (cloud_downsampled);
-         pcl::PointXYZRGBA searchPoint = cloud->points[i];
+         pcl::PointXYZ searchPoint = cloud->points[i];
          float radius = 0.03;
          std::vector<int> pointIdxRadiusSearch;
          std::vector<float> pointRadiusSquaredDistance;
          kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
      //Compute normal of a single point
+         pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
          float curvature;
          Eigen::Vector4f pt_normal;
-         pcl::computePointNormal(cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
+         pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
+
+    //     if ( kdtree.nearestKSearch (tool_path_back_projected->points[i], ksearch_tp_, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+     //    {
+          // float curvature;//1mm offset of envelope from selected points
+      //     pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);//(*target_surface,pointIdxRadiusSearch,pt_normal,curvature);
+     //    }
+
+
          pcl::PointNormal waypoint_w_normal;
          waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
          waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
