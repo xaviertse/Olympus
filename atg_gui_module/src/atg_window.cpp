@@ -2289,7 +2289,7 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
   else if (ui.comboBox_toolpath_selection->currentText()=="Zig Zag")
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_zigzag " + cmd +"' &";//-hold to hold, +hold to close
   else if (ui.comboBox_toolpath_selection->currentText()=="Point")
-    cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation Point " + cmd +"' &";//-hold to hold, +hold to close
+    cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_point " + cmd +"' &";//-hold to hold, +hold to close
 
   else
   {

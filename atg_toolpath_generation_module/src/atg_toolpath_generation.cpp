@@ -213,7 +213,7 @@ namespace ATG_toolpath_generation
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
     sor.setInputCloud(cloud_origin);
-    sor.setLeafSize(0.005f, 0.005f, 0.05f);
+    sor.setLeafSize(2, 2, 2);
     sor.filter(*cloud_filtered_blob);
     pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_downsampled);
     // Calculate Normals
@@ -227,22 +227,31 @@ namespace ATG_toolpath_generation
 //    normal_estimator.compute(*normals);
 
 
+    pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+    pcl::PointNormal waypoint_w_normal;
+
     for (size_t i = 0; i < cloud->points.size(); i++)
-      {
+    {
+        if(1)
+        {
+          float progresspct = 50+50*i/(cloud->points.size()-1);
+          emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
+        }
          //Radial search for estimating neighborhood indices
          pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
          kdtree.setInputCloud (cloud_downsampled);
          pcl::PointXYZ searchPoint = cloud->points[i];
-         float radius = 0.03;
+         float radius = 3;
          std::vector<int> pointIdxRadiusSearch;
          std::vector<float> pointRadiusSquaredDistance;
          kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
      //Compute normal of a single point
-         pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+         //pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
          float curvature;
          Eigen::Vector4f pt_normal;
          pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
+
 
     //     if ( kdtree.nearestKSearch (tool_path_back_projected->points[i], ksearch_tp_, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
      //    {
@@ -251,7 +260,7 @@ namespace ATG_toolpath_generation
      //    }
 
 
-         pcl::PointNormal waypoint_w_normal;
+         //pcl::PointNormal waypoint_w_normal;
          waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
          waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
          waypoint_w_normal.normal_z = pt_normal[2];
@@ -292,6 +301,22 @@ namespace ATG_toolpath_generation
            //angle[2]=angle[2]-360;
          }
 
+         pcl::PointNormal waypoint_jump_w_normal;
+         //float lift_height_ = 0.05;
+         waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
+         waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
+         waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
+         waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
+         waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
+         waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
+         waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
+
+
+         fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                 waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                 angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+         toolpath_w_normal->push_back(waypoint_jump_w_normal);
 
 
          fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
@@ -301,15 +326,6 @@ namespace ATG_toolpath_generation
          toolpath_w_normal->push_back(waypoint_w_normal);
 
 
-         pcl::PointNormal waypoint_jump_w_normal;
-         float lift_height_ = 0.05;
-         waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
-         waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
-         waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
-         waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
-         waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
-         waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
-         waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
 
          fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
                  waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
@@ -318,11 +334,12 @@ namespace ATG_toolpath_generation
          toolpath_w_normal->push_back(waypoint_jump_w_normal);
 
 
-      }
+      }//end of for loop
+    pcl::io::savePCDFile("data/coupons/tool_path_back_projected_w_lift.pcd", *toolpath_w_normal);
+    fout.close(); //close the file
 
-
-
-
+    //float progresspct =100;
+    //emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
     return 0;
   }
 
