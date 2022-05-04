@@ -4,7 +4,12 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/boundary.h>
+<<<<<<< HEAD
 
+=======
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/extract_indices.h>
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 namespace ATG_toolpath_generation
 {
   ATG_TPG::ATG_TPG(){}
@@ -160,6 +165,193 @@ namespace ATG_toolpath_generation
     return boundary_points;
   }
 
+<<<<<<< HEAD
+=======
+//-------------------------------------------------------------------------POINT-----------------------------------------------------------
+  int ATG_TPG::Point(std::string filename)
+  {
+
+    // ===== 1. Load variables
+    // ===== 2. Load cluster
+    // ===== 3. Find cluster bounding box, and also transform and data into bounding box, saved in cloudPointsProjected.txt
+    // ===== 4. Toolpath Generation, python script, saves toolpath within boundingbox into sampling_tool_path.txt
+    // ===== 5. Loades saved toolpath and transform into actual location
+    // ===== 6. Loads coupon surface into kdtreeFlann and check each point in toolpath
+    // ===== 6.1 calculate for offset direction for each point
+    // ===== 6.2 calculate for individual point's normal from coupon data, and flip for correction
+    // ===== 6.3 calculate for individual point's quat and rpy
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PCLPointCloud2::Ptr cloud_blob (new pcl::PCLPointCloud2), cloud_filtered_blob (new pcl::PCLPointCloud2), cloud_origin (new pcl::PCLPointCloud2);
+
+    if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *cloud) == -1)
+    {
+      std::cout << "Failed to read PCD file from: " << filename << std::endl;
+      exit(1);
+    }
+    //int sorted_on = 1;//permanent on now
+    //double offset = 0;//superceded
+    double depth = 0;
+
+    // ===== 1. Load variables, done before this function call, this is just for displaying the variables
+    // =======================
+    std::cout << "external_on_      : " << std::to_string(external_on_      ) << std::endl;
+    std::cout << "internal_on_      : " << std::to_string(internal_on_      ) << std::endl;
+    std::cout << "resolution_       : " << std::to_string(resolution_       ) << std::endl;
+    std::cout << "step_size_        : " << std::to_string(step_size_        ) << std::endl;
+    std::cout << "offset_           : " << std::to_string(offset_           ) << std::endl;
+    std::cout << "path_rotate_      : " << std::to_string(path_rotate_      ) << std::endl;
+    std::cout << "downsample_       : " << std::to_string(downsample_       ) << std::endl;
+    std::cout << "ksearch_tp_       : " << std::to_string(ksearch_tp_       ) << std::endl;
+    std::cout << "normal_flip_      : " << std::to_string(normal_flip_      ) << std::endl;
+    std::cout << "section_range_min_: " << std::to_string(section_range_min_) << std::endl;
+    std::cout << "section_range_max_: " << std::to_string(section_range_max_) << std::endl;
+    std::cout << "reverse_toolpath_ : " << std::to_string(reverse_toolpath_ ) << std::endl;
+    std::cout << "forced_resolution_: " << std::to_string(forced_resolution_) << std::endl;
+    std::cout << "hole_patch_size_  : " << std::to_string(hole_patch_size_  ) << std::endl;
+    std::cout << "lift_height_      : " << std::to_string(lift_height_      ) << std::endl;
+
+
+    std::string output_filename = "data/coupons/tool_path_back_projected_w_lift_n_trigger.txt";                           //final tool path file
+    std::ofstream fout(output_filename);
+
+    pcl::io::loadPCDFile ("data/coupons/coupon_whole.pcd", *cloud_origin);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+    sor.setInputCloud(cloud_origin);
+    sor.setLeafSize(2, 2, 2);
+    sor.filter(*cloud_filtered_blob);
+    pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_downsampled);
+    // Calculate Normals
+//    std::cout << "Calculate Normals ...\n";
+//    pcl::search::Search<pcl::PointXYZ>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> >(new pcl::search::KdTree<pcl::PointXYZ>);
+//    pcl::PointCloud <pcl::Normal>::Ptr normals(new pcl::PointCloud <pcl::Normal>);
+//    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
+//    normal_estimator.setSearchMethod(tree);
+//    normal_estimator.setInputCloud(cloud_downsampled);
+//    normal_estimator.setKSearch(100);
+//    normal_estimator.compute(*normals);
+
+
+    pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+    pcl::PointNormal waypoint_w_normal;
+
+    for (size_t i = 0; i < cloud->points.size(); i++)
+    {
+        if(1)
+        {
+          float progresspct = 50+50*i/(cloud->points.size()-1);
+          emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
+        }
+         //Radial search for estimating neighborhood indices
+         pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+         kdtree.setInputCloud (cloud_downsampled);
+         pcl::PointXYZ searchPoint = cloud->points[i];
+         float radius = 3;
+         std::vector<int> pointIdxRadiusSearch;
+         std::vector<float> pointRadiusSquaredDistance;
+         kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+
+     //Compute normal of a single point
+         //pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+         float curvature;
+         Eigen::Vector4f pt_normal;
+         pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
+
+
+    //     if ( kdtree.nearestKSearch (tool_path_back_projected->points[i], ksearch_tp_, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+     //    {
+          // float curvature;//1mm offset of envelope from selected points
+      //     pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);//(*target_surface,pointIdxRadiusSearch,pt_normal,curvature);
+     //    }
+
+
+         //pcl::PointNormal waypoint_w_normal;
+         waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
+         waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
+         waypoint_w_normal.normal_z = pt_normal[2];
+         waypoint_w_normal.x = cloud->points[i].x;
+         waypoint_w_normal.y = cloud->points[i].y;
+         waypoint_w_normal.z = cloud->points[i].z;
+
+         //--------------------------code ------------xavier getting the quaternion-----------------------
+         Eigen::Vector3d norm(waypoint_w_normal.normal_x, waypoint_w_normal.normal_y, waypoint_w_normal.normal_z);
+         Eigen::Quaterniond q;
+         q.setFromTwoVectors(Eigen::Vector3d(0,0,1), norm);
+         q.normalize();
+         //std::cout << "This normal" << norm.transpose() << std::endl;
+         //std::cout << "This quaternion consists of a scalar " << q.w() << " and a vector " << std::endl << q.vec().transpose() << std::endl;
+         Eigen::Matrix<double,3,3> rotationMatrix;
+         rotationMatrix = q.toRotationMatrix();
+         //std::cout << "This normal" << rotationMatrix << std::endl;
+         //Eigen::AngleAxisd newAngleAxis(rotationMatrix);
+         //Eigen::Vector3d euler = rotationMatrix.eulerAngles(0, 1, 2);
+
+         //manual calculations, still valid
+         Eigen::Vector3d angle;
+         double roll  = atan2( rotationMatrix(2,1),rotationMatrix(2,2) );
+         double pitch = atan2( -rotationMatrix(2,0), std::pow( rotationMatrix(2,1)*rotationMatrix(2,1) +rotationMatrix(2,2)*rotationMatrix(2,2) ,0.5  )  );
+         double yaw   = atan2( rotationMatrix(1,0),rotationMatrix(0,0) );
+         Eigen::Vector3d quat;
+         quat=q.vec();
+         angle[0]=roll*180/(std::atan(1.0)*4);
+         if (angle[0]>180){
+         //   angle[0]=angle[0]-360;
+         }
+         angle[1]=pitch*180/(std::atan(1.0)*4);
+         if (angle[1]>180){
+         //  angle[1]=angle[1]-360;
+         }
+         angle[2]=yaw*180/(std::atan(1.0)*4);
+         if (angle[2]>180){
+           //angle[2]=angle[2]-360;
+         }
+
+         pcl::PointNormal waypoint_jump_w_normal;
+         //float lift_height_ = 0.05;
+         waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
+         waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
+         waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
+         waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
+         waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
+         waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
+         waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
+
+
+         fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                 waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                 angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+         toolpath_w_normal->push_back(waypoint_jump_w_normal);
+
+
+         fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+                 waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+                 angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '1'<<'\n';
+         toolpath_w_normal->push_back(waypoint_w_normal);
+
+
+
+         fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+                 waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+                 angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+         toolpath_w_normal->push_back(waypoint_jump_w_normal);
+
+
+      }//end of for loop
+    pcl::io::savePCDFile("data/coupons/tool_path_back_projected_w_lift.pcd", *toolpath_w_normal);
+    fout.close(); //close the file
+
+    //float progresspct =100;
+    //emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
+    return 0;
+  }
+
+//--------------------------------------------------------------------POINT-----------------------------------------------------
+
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
   int ATG_TPG::contour_toolpath(std::string filename)
   {
     // ===== 1. Load variables
@@ -284,7 +476,11 @@ namespace ATG_toolpath_generation
 //          int progresspct = 20+i/tp_size_5pct*5;
 //          //emit progressUpdated(progresspct);
 //          emit_signal ("toolpath_signal", std::to_string(progresspct));
+<<<<<<< HEAD
 //          std::cout << "\rEMIT progressUpdate"<< progresspct <<" ";
+=======
+//          std::cout << "\rEMIT progressUpdate"<< progresspct     normal_estimator.setInputCloud(cloud);
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 //        }
 //      }
       //need to emit 50-100%
@@ -458,7 +654,11 @@ namespace ATG_toolpath_generation
       p2.y = tool_path_back_projected->points[i+1].y; //p2.y = toolpath->points[i*2].y;  //p2.y = toolpath->points[i*10].y;
       p2.z = tool_path_back_projected->points[i+1].z; //p2.z = toolpath->points[i*2].z;  //p2.z = toolpath->points[i*10].z;
       double pt2pt_dist = sqrt(pow(fabs(p1.x-p2.x),2)+pow(fabs(p1.y-p2.y),2)+pow(fabs(p1.z-p2.z),2));
+<<<<<<< HEAD
       //std::cout << "pt2pt = " << pt2pt_dist << "  gap_size = " << gap_size << "\n";
+=======
+      //std::cout << "pt2pt = " << pt2pt_disDetect_Boundaryt << "  gap_size = " << gap_size << "\n";
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
       if (i<tp_size-1 && (pt2pt_dist>gap_size))//10
       {
         float /*x11, y11, z11, n11, n12, n13,*/ a11, a12, a13, q11, q12, q13, q14, d11;
@@ -502,7 +702,11 @@ namespace ATG_toolpath_generation
         toolpath_w_normal->push_back(waypoint_jump_w_normal);
 
 //        fout << x11 - n11*50 << ';' << y11- n12*50 << ';' << z11 - n13*50 << ';' << n11 << ';' << n12 << ';'<< n13 <<';'<<
+<<<<<<< HEAD
 //             a11 << ';' << b11 << ';' << c11 << ';' <<
+=======
+//             a11 << ';' << b11 << ';' << c11Detect_Boundary << ';' <<
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 //             q11 << ';' << q12 << ';' << q13 << ';' << q14 << ';'<<'0'<<'\n';
 
       }

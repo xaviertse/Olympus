@@ -6,6 +6,10 @@
 #include <pcl/filters/extract_indices.h>
 //#include <pcl/kdtree/kdtree.h>
 #include <boost/filesystem.hpp>
+<<<<<<< HEAD
+=======
+#include <pcl/io/pcd_io.h>
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 
 namespace ATG_surface_identification
 {
@@ -204,6 +208,10 @@ namespace ATG_surface_identification
       std::cout << "Cloud reading failed. Wrong file format" << src_filename << std::endl;
       exit(1);
     }
+<<<<<<< HEAD
+=======
+    pcl::io::savePCDFileASCII <pcl::PointXYZ> ("data/coupons/coupon_whole.pcd", *cloud_origin);
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
     return (cloud_origin);
   }
 

@@ -1,9 +1,16 @@
 #added by ATG for tcp change in tilt and diameter
 package: "tool_model" 
+<<<<<<< HEAD
 xacro_dir: /urdf/EcoPen450_Pen_Tool.xacro
 X: -0.05123
 Y: -0.05060
 Z: 0.17863
+=======
+xacro_dir: /urdf/NDT_Tool.xacro
+X: 0.00000
+Y: 0.00000
+Z: 0.17000
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 R_: 0.0000
 P_: 0.0000
 Y_: 0.0000
@@ -11,6 +18,11 @@ eeX: 0.00000
 eeY: 0.00000
 eeZ: 0.00000
 eeR_: 0.0000
+<<<<<<< HEAD
 eeP_: 3.1416
 eeY_: 0.7854
+=======
+eeP_: 0.0000
+eeY_: 0.0000
+>>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
 dia: 0.00000
