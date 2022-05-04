@@ -1,5 +1,6 @@
 #added by ATG for setup/sim launch
 <<<<<<< HEAD
+<<<<<<< HEAD
 initial_joint_state: [-2.25,-1.16,-1.86,-1.67,1.58,0]
 trajectory/seed_pose: [-2.25,-1.16,-1.86,-1.67,1.58,0]
 =======
@@ -7,6 +8,11 @@ initial_joint_state: [1.22,-1.92,1.57,-1.309,-1.57,-0.26]
 trajectory/seed_pose: [1.22,-1.92,1.57,-1.309,-1.57,-0.26]
 #trajectory/seed_pose: [-2.25,-1.16,-1.86,-1.67,1.58,0] 70,-110;90;-75;90;-15
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+initial_joint_state: [1.22,-1.92,1.57,-1.309,-1.57,-0.26]
+trajectory/seed_pose: [1.22,-1.92,1.57,-1.309,-1.57,-0.26]
+#trajectory/seed_pose: [-2.25,-1.16,-1.86,-1.67,1.58,0] 70,-110;90;-75;90;-15
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
 #trajectory/seed_pose: [0,-1,1.5,-2,-1.57,0]
 masking_tool_velocity: 20 # mm/s default 30
 

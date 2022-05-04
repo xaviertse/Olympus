@@ -85,10 +85,14 @@ namespace robotMotion
         std::string cell;
         int cell_no = 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
         while (std::getline(lineStream, cell, ','))
 =======
         while (std::getline(lineStream, cell, ';'))
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+        while (std::getline(lineStream, cell, ';'))
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
         {
             if(cell_no==6)
             {

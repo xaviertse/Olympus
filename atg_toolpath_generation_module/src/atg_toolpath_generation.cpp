@@ -5,11 +5,15 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/boundary.h>
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/extract_indices.h>
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
 namespace ATG_toolpath_generation
 {
   ATG_TPG::ATG_TPG(){}
@@ -165,6 +169,7 @@ namespace ATG_toolpath_generation
     return boundary_points;
   }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 //-------------------------------------------------------------------------POINT-----------------------------------------------------------
@@ -352,6 +357,8 @@ namespace ATG_toolpath_generation
 //--------------------------------------------------------------------POINT-----------------------------------------------------
 
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
   int ATG_TPG::contour_toolpath(std::string filename)
   {
     // ===== 1. Load variables
@@ -477,10 +484,14 @@ namespace ATG_toolpath_generation
 //          //emit progressUpdated(progresspct);
 //          emit_signal ("toolpath_signal", std::to_string(progresspct));
 <<<<<<< HEAD
+<<<<<<< HEAD
 //          std::cout << "\rEMIT progressUpdate"<< progresspct <<" ";
 =======
 //          std::cout << "\rEMIT progressUpdate"<< progresspct     normal_estimator.setInputCloud(cloud);
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+//          std::cout << "\rEMIT progressUpdate"<< progresspct <<" ";
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
 //        }
 //      }
       //need to emit 50-100%
@@ -655,10 +666,14 @@ namespace ATG_toolpath_generation
       p2.z = tool_path_back_projected->points[i+1].z; //p2.z = toolpath->points[i*2].z;  //p2.z = toolpath->points[i*10].z;
       double pt2pt_dist = sqrt(pow(fabs(p1.x-p2.x),2)+pow(fabs(p1.y-p2.y),2)+pow(fabs(p1.z-p2.z),2));
 <<<<<<< HEAD
+<<<<<<< HEAD
       //std::cout << "pt2pt = " << pt2pt_dist << "  gap_size = " << gap_size << "\n";
 =======
       //std::cout << "pt2pt = " << pt2pt_disDetect_Boundaryt << "  gap_size = " << gap_size << "\n";
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+      //std::cout << "pt2pt = " << pt2pt_dist << "  gap_size = " << gap_size << "\n";
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
       if (i<tp_size-1 && (pt2pt_dist>gap_size))//10
       {
         float /*x11, y11, z11, n11, n12, n13,*/ a11, a12, a13, q11, q12, q13, q14, d11;
@@ -703,10 +718,14 @@ namespace ATG_toolpath_generation
 
 //        fout << x11 - n11*50 << ';' << y11- n12*50 << ';' << z11 - n13*50 << ';' << n11 << ';' << n12 << ';'<< n13 <<';'<<
 <<<<<<< HEAD
+<<<<<<< HEAD
 //             a11 << ';' << b11 << ';' << c11 << ';' <<
 =======
 //             a11 << ';' << b11 << ';' << c11Detect_Boundary << ';' <<
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+//             a11 << ';' << b11 << ';' << c11 << ';' <<
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
 //             q11 << ';' << q12 << ';' << q13 << ';' << q14 << ';'<<'0'<<'\n';
 
       }

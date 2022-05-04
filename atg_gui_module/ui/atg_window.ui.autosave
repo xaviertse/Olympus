@@ -248,11 +248,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-<<<<<<< HEAD
         <number>3</number>
-=======
-        <number>2</number>
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -291,11 +287,7 @@
             </font>
            </property>
            <property name="currentIndex">
-<<<<<<< HEAD
-            <number>1</number>
-=======
             <number>0</number>
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -714,11 +706,7 @@ Close</string>
             </font>
            </property>
            <property name="currentIndex">
-<<<<<<< HEAD
-            <number>2</number>
-=======
             <number>0</number>
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
            </property>
            <widget class="QWidget" name="tab_13">
             <attribute name="title">
@@ -2033,11 +2021,7 @@ Close</string>
             </font>
            </property>
            <property name="currentIndex">
-<<<<<<< HEAD
-            <number>1</number>
-=======
             <number>0</number>
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
            </property>
            <widget class="QWidget" name="tab_10">
             <attribute name="title">
@@ -7238,14 +7222,6 @@ Duration [s]</string>
                  </item>
                  <item>
                   <property name="text">
-<<<<<<< HEAD
-                   <string>Point</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-=======
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
                    <string>Zig Zag</string>
                   </property>
                  </item>

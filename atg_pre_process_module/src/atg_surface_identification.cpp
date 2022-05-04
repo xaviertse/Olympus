@@ -7,9 +7,12 @@
 //#include <pcl/kdtree/kdtree.h>
 #include <boost/filesystem.hpp>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #include <pcl/io/pcd_io.h>
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
 
 namespace ATG_surface_identification
 {
@@ -209,9 +212,12 @@ namespace ATG_surface_identification
       exit(1);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     pcl::io::savePCDFileASCII <pcl::PointXYZ> ("data/coupons/coupon_whole.pcd", *cloud_origin);
 >>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
+=======
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
     return (cloud_origin);
   }
 

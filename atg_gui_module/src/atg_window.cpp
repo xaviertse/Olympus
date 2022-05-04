@@ -2288,9 +2288,12 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_contour " + cmd +"' &";//-hold to hold, +hold to close
   else if (ui.comboBox_toolpath_selection->currentText()=="Zig Zag")
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_zigzag " + cmd +"' &";//-hold to hold, +hold to close
+<<<<<<< HEAD
   else if (ui.comboBox_toolpath_selection->currentText()=="Point")
     cmd = "xterm -iconic -hold -e 'rosrun atg_toolpath_generation atg_toolpath_point " + cmd +"' &";//-hold to hold, +hold to close
 
+=======
+>>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
   else
   {
     std::cout << "Invalid toolpath selection\n";
