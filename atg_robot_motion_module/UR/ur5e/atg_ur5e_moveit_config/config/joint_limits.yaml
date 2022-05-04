@@ -17,16 +17,8 @@ joint_limits:
     max_velocity: 3.14
     has_acceleration_limits: false
     max_acceleration: 0
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     min_position: -0.35
     max_position: 2.79
->>>>>>> 9845d2bd0d7cd3b3d63106eb00234e3d05d9ac86
-=======
-    min_position: -0.35
-    max_position: 2.79
->>>>>>> 07aca541621e5cba057452ac8435109ff36ed434
   wrist_1_joint:
     has_velocity_limits: true
     max_velocity: 6.28
