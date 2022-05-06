@@ -528,6 +528,12 @@ void ATG_Window::readQSettings() //read settings when value change
     ui.doubleSpinBox_ndt_blend_radius->setValue(readValue.toDouble());
     readValue = settings.value(property_name+"/param/wait", "0").toString();
     ui.doubleSpinBox_ndt_wait->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/force", "1").toString();
+    ui.doubleSpinBox_ndt_force->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/probe_size", "5").toString();
+    ui.doubleSpinBox_ndt_probe_size->setValue(readValue.toDouble());
+    readValue = settings.value(property_name+"/param/contact_threshold", "80").toString();
+    ui.doubleSpinBox_ndt_contact_threshold->setValue(readValue.toDouble());
 
     readValue = settings.value("Settings/Robot/Robot", "0").toString();
     ui.comboBox_robot_selection->setCurrentIndex(readValue.toDouble());
@@ -752,6 +758,9 @@ void ATG_Window::writeQSettings() //write settings when value change
     settings.setValue(property_name+"/param/lift_height",QString::number(ui.doubleSpinBox_ndt_lift_height ->value(),'f',2));
     settings.setValue(property_name+"/param/blend",      QString::number(ui.doubleSpinBox_ndt_blend_radius->value(),'f',2));
     settings.setValue(property_name+"/param/wait",       QString::number(ui.doubleSpinBox_ndt_wait        ->value(),'f',2));
+    settings.setValue(property_name+"/param/force",      QString::number(ui.doubleSpinBox_ndt_force       ->value(),'f',2));
+    settings.setValue(property_name+"/param/probe_size", QString::number(ui.doubleSpinBox_ndt_probe_size  ->value(),'f',2));
+    settings.setValue(property_name+"/param/contact_threshold", QString::number(ui.doubleSpinBox_ndt_contact_threshold->value(),'f',2));
 
     settings.setValue("Settings/Robot/Robot",    QString::number(ui.comboBox_robot_selection ->currentIndex()));
     settings.setValue("Settings/Robot/Tool",     QString::number(ui.comboBox_tool_selection  ->currentIndex()));

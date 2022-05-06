@@ -2021,7 +2021,7 @@ Close</string>
             </font>
            </property>
            <property name="currentIndex">
-            <number>7</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab_10">
             <attribute name="title">
@@ -6752,13 +6752,13 @@ size [mm]</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Feedrate
-[mm/s]</string>
+                  <string>Travel
+Speed[mm/s]</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_feedrate">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_lift_speed">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -6779,18 +6779,12 @@ size [mm]</string>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_142">
+                <widget class="QLabel" name="label_139">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>50</height>
-                  </size>
                  </property>
                  <property name="font">
                   <font>
@@ -6798,13 +6792,13 @@ size [mm]</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Flowrate
-[ml/s]</string>
+                  <string>Blend Radius
+[mm]</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_flowrate">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_blend_radius">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -6821,6 +6815,9 @@ size [mm]</string>
                  </property>
                  <property name="locale">
                   <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="maximum">
+                  <double>50.000000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -6848,7 +6845,7 @@ size [mm]</string>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_lift_speed">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_feedrate">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -6921,7 +6918,7 @@ size [mm]</string>
                <item>
                 <widget class="QLabel" name="label_138">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -6949,7 +6946,7 @@ Duration [s]</string>
                <item>
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_wait">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="minimumSize">
                   <size>
@@ -6974,12 +6971,15 @@ Duration [s]</string>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_139">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+                <widget class="QLabel" name="label_143">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
                  </property>
                  <property name="font">
                   <font>
@@ -6987,13 +6987,16 @@ Duration [s]</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Blend Radius
+                  <string>Probe Radius
 [mm]</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_blend_radius">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_probe_radius_temp">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -7011,8 +7014,116 @@ Duration [s]</string>
                  <property name="locale">
                   <locale language="English" country="UnitedStates"/>
                  </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
                  <property name="maximum">
-                  <double>50.000000000000000</double>
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_114">
+               <item>
+                <widget class="QLabel" name="label_142">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>50</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Flowrate
+[ml/s]</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_flowrate">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_144">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Force
+[N]</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_force">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="maximum">
+                  <double>999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>20.000000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -7030,6 +7141,117 @@ Duration [s]</string>
                 </size>
                </property>
               </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_115">
+               <item>
+                <widget class="QLabel" name="label_145">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Probe Size [mm]
+(diameter)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_probe_size">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_146">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Contact 
+Threshold</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_ndt_contact_threshold">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="maximum">
+                  <double>100.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>80.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -7050,7 +7272,7 @@ Duration [s]</string>
             </font>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="tab_12">
             <attribute name="title">
@@ -7222,12 +7444,12 @@ Duration [s]</string>
                  </item>
                  <item>
                   <property name="text">
-                   <string>Point</string>
+                   <string>Zig Zag</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>Zig Zag</string>
+                   <string>Point</string>
                   </property>
                  </item>
                 </widget>
@@ -7943,6 +8165,120 @@ Range (%)</string>
                  </property>
                  <property name="value">
                   <double>100.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_116">
+               <item>
+                <widget class="QLabel" name="label_KSearch_diameter_size">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>KSearch Size 
+(diameter)[mm]</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_KSearch_diameter_size">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_KSearch_contact_threshold">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Contact 
+Threshold</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_KSearch_contact_threshold">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>45</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="locale">
+                  <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhFormattedNumbersOnly</set>
+                 </property>
+                 <property name="minimum">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>100.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>80.000000000000000</double>
                  </property>
                 </widget>
                </item>

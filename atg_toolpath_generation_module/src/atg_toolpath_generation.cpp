@@ -266,9 +266,22 @@ namespace ATG_toolpath_generation
          waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
          waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
          waypoint_w_normal.normal_z = pt_normal[2];
+         if (waypoint_w_normal.normal_z<0)                                  //josh added temporary for nor3>0 condition
+         {                                                  //josh added temporary for nor3>0 condition
+             waypoint_w_normal.normal_x *= -1;//n.normal_x = normals->points[idx].normal_x*-1; //josh added temporary for nor3>0 condition
+             waypoint_w_normal.normal_y *= -1;//n.normal_y = normals->points[idx].normal_y*-1; //josh added temporary for nor3>0 condition
+             waypoint_w_normal.normal_z *= -1;//n.normal_z = normals->points[idx].normal_z*-1; //josh added temporary for nor3>0 condition
+         }                                                  //josh added temporary for nor3>0 condition
+         if (normal_flip_)     //user defined normal flip
+         {                    //user defined normal flip
+             waypoint_w_normal.normal_x *= -1;//user defined normal flip
+             waypoint_w_normal.normal_y *= -1;//user defined normal flip
+             waypoint_w_normal.normal_z *= -1;//user defined normal flip
+         }                    //user defined normal flip
          waypoint_w_normal.x = cloud->points[i].x;
          waypoint_w_normal.y = cloud->points[i].y;
          waypoint_w_normal.z = cloud->points[i].z;
+
 
          //--------------------------code ------------xavier getting the quaternion-----------------------
          Eigen::Vector3d norm(waypoint_w_normal.normal_x, waypoint_w_normal.normal_y, waypoint_w_normal.normal_z);
