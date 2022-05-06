@@ -248,7 +248,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>3</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -7272,7 +7272,7 @@ Threshold</string>
             </font>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab_12">
             <attribute name="title">

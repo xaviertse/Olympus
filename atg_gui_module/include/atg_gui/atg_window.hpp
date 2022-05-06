@@ -107,6 +107,9 @@ namespace atg_gui
 
     void doubleSpinBox_sandblasting_zone_radius_changed(double);
 
+    void double_KSearch_diameter_changed(double);
+    void double_KSearch_contact_threshold_changed(double);
+
     //slots for toolpath tab
     void comboBox_toolpath_selection_textChanged(QString Text_comboBox);
     void pushButton_plot_toolpath_clicked();

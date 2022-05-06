@@ -257,7 +257,11 @@ ATG_Window::ATG_Window(int argc, char** argv, QWidget *parent) :
     connect (ui.doubleSpinBox_impedance_blend_radius,SIGNAL (valueChanged (double)), this, SLOT   (doubleSpinBox_impedance_blend_radius_changed(double)));
     //sandblasting tool
     connect (ui.doubleSpinBox_sandblasting_zone_radius,SIGNAL (valueChanged (double)), this, SLOT (doubleSpinBox_sandblasting_zone_radius_changed(double)));
-
+    //ndt tool
+    connect (ui.doubleSpinBox_KSearch_diameter_size,SIGNAL (valueChanged (double)), this, SLOT (double_KSearch_diameter_changed(double)));
+    connect (ui.doubleSpinBox_ndt_probe_size,SIGNAL        (valueChanged (double)), this, SLOT (double_KSearch_diameter_changed(double)));
+    connect (ui.doubleSpinBox_KSearch_contact_threshold,SIGNAL (valueChanged (double)), this, SLOT (double_KSearch_contact_threshold_changed(double)));
+    connect (ui.doubleSpinBox_ndt_contact_threshold,SIGNAL     (valueChanged (double)), this, SLOT (double_KSearch_contact_threshold_changed(double)));
 
     //=======================================
     //slots for toolpath tab
@@ -2171,6 +2175,10 @@ void ATG_Window::comboBox_toolpath_selection_textChanged(QString Text_comboBox)
     ui.spinBox_path_section_range_min->setVisible(false);
     ui.spinBox_path_section_range_max->setVisible(false);
     ui.checkbox_reverse_toolpath     ->setVisible(false);
+    ui.label_KSearch_diameter_size            ->setVisible(false);
+    ui.doubleSpinBox_KSearch_diameter_size    ->setVisible(false);
+    ui.label_KSearch_contact_threshold        ->setVisible(false);
+    ui.doubleSpinBox_KSearch_contact_threshold->setVisible(false);
 
     if(Text_comboBox == "Boundary")
     {
@@ -2210,6 +2218,13 @@ void ATG_Window::comboBox_toolpath_selection_textChanged(QString Text_comboBox)
       ui.label_KSearch_TP_Surface  ->setVisible(true);
       ui.spinBox_KSearch_TP_Surface->setVisible(true);
       ui.checkbox_reverse_toolpath     ->setVisible(true);
+    }
+    else if (Text_comboBox == "Point")
+    {
+      ui.label_KSearch_diameter_size            ->setVisible(true);
+      ui.doubleSpinBox_KSearch_diameter_size    ->setVisible(true);
+      ui.label_KSearch_contact_threshold        ->setVisible(true);
+      ui.doubleSpinBox_KSearch_contact_threshold->setVisible(true);
     }
     else
     {
@@ -3784,5 +3799,15 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ATG_Window::cloud_union(pcl::PointCloud<pcl:
   return (cloud_base);
 }
 
+void ATG_Window::double_KSearch_diameter_changed(double input)
+{
+  ui.doubleSpinBox_KSearch_diameter_size->setValue(input);
+  ui.doubleSpinBox_ndt_probe_size       ->setValue(input);
+}
+void ATG_Window::double_KSearch_contact_threshold_changed(double input)
+{
+  ui.doubleSpinBox_KSearch_contact_threshold->setValue(input);
+  ui.doubleSpinBox_ndt_contact_threshold    ->setValue(input);
+}
 
 }//close namespace atg_gui
