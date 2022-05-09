@@ -7,6 +7,8 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/extract_indices.h>
 
+#include <pcl/segmentation/sac_segmentation.h>
+
 namespace ATG_toolpath_generation
 {
   ATG_TPG::ATG_TPG(){}
@@ -178,7 +180,6 @@ namespace ATG_toolpath_generation
     // ===== 6.3 calculate for individual point's quat and rpy
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PCLPointCloud2::Ptr cloud_blob (new pcl::PCLPointCloud2), cloud_filtered_blob (new pcl::PCLPointCloud2), cloud_origin (new pcl::PCLPointCloud2);
 
     if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *cloud) == -1)
     {
@@ -206,150 +207,177 @@ namespace ATG_toolpath_generation
     std::cout << "forced_resolution_: " << std::to_string(forced_resolution_) << std::endl;
     std::cout << "hole_patch_size_  : " << std::to_string(hole_patch_size_  ) << std::endl;
     std::cout << "lift_height_      : " << std::to_string(lift_height_      ) << std::endl;
+    std::cout << "ksearch_radius_   : " << std::to_string(ksearch_radius_   ) << std::endl;
+    std::cout << "ksearch_threshold_: " << std::to_string(ksearch_threshold_) << std::endl;
 
 
     std::string output_filename = "data/coupons/tool_path_back_projected_w_lift_n_trigger.txt";                           //final tool path file
     std::ofstream fout(output_filename);
 
-    pcl::io::loadPCDFile ("data/coupons/coupon_whole.pcd", *cloud_origin);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-    sor.setInputCloud(cloud_origin);
-    sor.setLeafSize(2, 2, 2);
-    sor.filter(*cloud_filtered_blob);
-    pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_downsampled);
-    // Calculate Normals
-//    std::cout << "Calculate Normals ...\n";
-//    pcl::search::Search<pcl::PointXYZ>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> >(new pcl::search::KdTree<pcl::PointXYZ>);
-//    pcl::PointCloud <pcl::Normal>::Ptr normals(new pcl::PointCloud <pcl::Normal>);
-//    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
-//    normal_estimator.setSearchMethod(tree);
-//    normal_estimator.setInputCloud(cloud_downsampled);
-//    normal_estimator.setKSearch(100);
-//    normal_estimator.compute(*normals);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_origin(new pcl::PointCloud<pcl::PointXYZ>);
 
+    std::string filename_cloud_origin = "data/coupons/coupon_whole.pcd";
+    if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename_cloud_origin, *cloud_origin) == -1)
+    {
+      std::cout << "Failed to read PCD file from: " << filename_cloud_origin << std::endl;
+      exit(1);
+    }
+
+    //downsample data
+    //pcl::PCLPointCloud2::Ptr cloud_blob (new pcl::PCLPointCloud2), cloud_filtered_blob (new pcl::PCLPointCloud2), cloud_origin (new pcl::PCLPointCloud2);
+    //pcl::io::loadPCDFile ("data/coupons/coupon_whole.pcd", *cloud_origin);
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
+    //pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+    //sor.setInputCloud(cloud_origin);
+    //sor.setLeafSize(2, 2, 2);
+    //sor.filter(*cloud_filtered_blob);
+    //pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_downsampled);
 
     pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
     pcl::PointNormal waypoint_w_normal;
 
     for (size_t i = 0; i < cloud->points.size(); i++)
     {
-        if(1)
-        {
-          float progresspct = 50+50*i/(cloud->points.size()-1);
-          emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
-        }
-         //Radial search for estimating neighborhood indices
-         pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-         kdtree.setInputCloud (cloud_downsampled);
-         pcl::PointXYZ searchPoint = cloud->points[i];
-         float radius = 3;
-         std::vector<int> pointIdxRadiusSearch;
-         std::vector<float> pointRadiusSquaredDistance;
-         kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+      if(1)
+      {
+        float progresspct = 50+50*i/(cloud->points.size()-1);
+        emit_signal ("toolpath_signal", "percent\n"+std::to_string(progresspct));
+      }
+      //Radial search for estimating neighborhood indices
+      pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+      kdtree.setInputCloud (cloud_origin); //(cloud_downsampled);
+      pcl::PointXYZ searchPoint = cloud->points[i];
+      float radius = ksearch_radius_; //3;
+      std::vector<int> pointIdxRadiusSearch;
+      std::vector<float> pointRadiusSquaredDistance;
+      kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
-     //Compute normal of a single point
-         //pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
-         float curvature;
-         Eigen::Vector4f pt_normal;
-         pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
-
-
-    //     if ( kdtree.nearestKSearch (tool_path_back_projected->points[i], ksearch_tp_, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
-     //    {
-          // float curvature;//1mm offset of envelope from selected points
-      //     pcl::computePointNormal(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);//(*target_surface,pointIdxRadiusSearch,pt_normal,curvature);
-     //    }
+      //Compute normal of a single point
+      //pcl::PointCloud<pcl::PointNormal>::Ptr toolpath_w_normal(new pcl::PointCloud<pcl::PointNormal>);
+      float curvature;
+      Eigen::Vector4f pt_normal;
+      pcl::computePointNormal(*cloud_origin,pointIdxRadiusSearch,pt_normal,curvature);//(*cloud_downsampled,pointIdxRadiusSearch,pt_normal,curvature);
 
 
-         //pcl::PointNormal waypoint_w_normal;
-         waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
-         waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
-         waypoint_w_normal.normal_z = pt_normal[2];
-         if (waypoint_w_normal.normal_z<0)                                  //josh added temporary for nor3>0 condition
-         {                                                  //josh added temporary for nor3>0 condition
-             waypoint_w_normal.normal_x *= -1;//n.normal_x = normals->points[idx].normal_x*-1; //josh added temporary for nor3>0 condition
-             waypoint_w_normal.normal_y *= -1;//n.normal_y = normals->points[idx].normal_y*-1; //josh added temporary for nor3>0 condition
-             waypoint_w_normal.normal_z *= -1;//n.normal_z = normals->points[idx].normal_z*-1; //josh added temporary for nor3>0 condition
-         }                                                  //josh added temporary for nor3>0 condition
-         if (normal_flip_)     //user defined normal flip
-         {                    //user defined normal flip
-             waypoint_w_normal.normal_x *= -1;//user defined normal flip
-             waypoint_w_normal.normal_y *= -1;//user defined normal flip
-             waypoint_w_normal.normal_z *= -1;//user defined normal flip
-         }                    //user defined normal flip
-         waypoint_w_normal.x = cloud->points[i].x;
-         waypoint_w_normal.y = cloud->points[i].y;
-         waypoint_w_normal.z = cloud->points[i].z;
+      //==============  Check plane ==============================
+      //create point cloud of selected radius
+      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_radius(new pcl::PointCloud<pcl::PointXYZ>);
+      pcl::ExtractIndices<pcl::PointXYZ> extract;
+      pcl::PointIndices::Ptr fInliers (new pcl::PointIndices);
+      fInliers->indices = pointIdxRadiusSearch;
+      extract.setInputCloud (cloud_origin);
+      extract.setIndices (fInliers);
+      extract.setNegative(false);
+      extract.filter(*cloud_radius);
+
+      pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+      pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+      // Create the segmentation object
+      pcl::SACSegmentation<pcl::PointXYZ> seg;
+      // Optional
+      seg.setOptimizeCoefficients (true);
+      // Mandatory
+      seg.setModelType (pcl::SACMODEL_PLANE);
+      seg.setMethodType (pcl::SAC_RANSAC);
+      seg.setDistanceThreshold (0.1); //can be toggled for param control
+      seg.setInputCloud (cloud_radius);
+      seg.segment (*inliers, *coefficients);
+
+      if (inliers->indices.size () == 0)
+      {
+        PCL_ERROR ("Could not estimate a planar model for the given dataset.\n");
+        //return (-1);
+      }
+      std::cerr << "Model inliers/Radius inliers: " << inliers->indices.size () << "/" << pointIdxRadiusSearch.size () << " = " << (float)inliers->indices.size()/(float)pointIdxRadiusSearch.size()*100 << std::endl;
+      if((float)inliers->indices.size()/(float)pointIdxRadiusSearch.size()*100<ksearch_threshold_)
+        continue; //skip to next point in for loop
+
+      //==============  Check plane End ==============================
 
 
-         //--------------------------code ------------xavier getting the quaternion-----------------------
-         Eigen::Vector3d norm(waypoint_w_normal.normal_x, waypoint_w_normal.normal_y, waypoint_w_normal.normal_z);
-         Eigen::Quaterniond q;
-         q.setFromTwoVectors(Eigen::Vector3d(0,0,1), norm);
-         q.normalize();
-         //std::cout << "This normal" << norm.transpose() << std::endl;
-         //std::cout << "This quaternion consists of a scalar " << q.w() << " and a vector " << std::endl << q.vec().transpose() << std::endl;
-         Eigen::Matrix<double,3,3> rotationMatrix;
-         rotationMatrix = q.toRotationMatrix();
-         //std::cout << "This normal" << rotationMatrix << std::endl;
-         //Eigen::AngleAxisd newAngleAxis(rotationMatrix);
-         //Eigen::Vector3d euler = rotationMatrix.eulerAngles(0, 1, 2);
-
-         //manual calculations, still valid
-         Eigen::Vector3d angle;
-         double roll  = atan2( rotationMatrix(2,1),rotationMatrix(2,2) );
-         double pitch = atan2( -rotationMatrix(2,0), std::pow( rotationMatrix(2,1)*rotationMatrix(2,1) +rotationMatrix(2,2)*rotationMatrix(2,2) ,0.5  )  );
-         double yaw   = atan2( rotationMatrix(1,0),rotationMatrix(0,0) );
-         Eigen::Vector3d quat;
-         quat=q.vec();
-         angle[0]=roll*180/(std::atan(1.0)*4);
-         if (angle[0]>180){
-         //   angle[0]=angle[0]-360;
-         }
-         angle[1]=pitch*180/(std::atan(1.0)*4);
-         if (angle[1]>180){
-         //  angle[1]=angle[1]-360;
-         }
-         angle[2]=yaw*180/(std::atan(1.0)*4);
-         if (angle[2]>180){
-           //angle[2]=angle[2]-360;
-         }
-
-         pcl::PointNormal waypoint_jump_w_normal;
-         //float lift_height_ = 0.05;
-         waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
-         waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
-         waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
-         waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
-         waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
-         waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
-         waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
+      //pcl::PointNormal waypoint_w_normal;
+      waypoint_w_normal.normal_x = pt_normal[0];//n.normal_x = normals->points[idx].normal_x;//josh replace for target pt normal compute
+      waypoint_w_normal.normal_y = pt_normal[1];//n.normal_y = normals->points[idx].normal_y;//josh replace for target pt normal compute
+      waypoint_w_normal.normal_z = pt_normal[2];
+      if (waypoint_w_normal.normal_z<0)                                  //josh added temporary for nor3>0 condition
+      {                                                  //josh added temporary for nor3>0 condition
+          waypoint_w_normal.normal_x *= -1;//n.normal_x = normals->points[idx].normal_x*-1; //josh added temporary for nor3>0 condition
+          waypoint_w_normal.normal_y *= -1;//n.normal_y = normals->points[idx].normal_y*-1; //josh added temporary for nor3>0 condition
+          waypoint_w_normal.normal_z *= -1;//n.normal_z = normals->points[idx].normal_z*-1; //josh added temporary for nor3>0 condition
+      }                                                  //josh added temporary for nor3>0 condition
+      if (normal_flip_)     //user defined normal flip
+      {                    //user defined normal flip
+          waypoint_w_normal.normal_x *= -1;//user defined normal flip
+          waypoint_w_normal.normal_y *= -1;//user defined normal flip
+          waypoint_w_normal.normal_z *= -1;//user defined normal flip
+      }                    //user defined normal flip
+      waypoint_w_normal.x = cloud->points[i].x;
+      waypoint_w_normal.y = cloud->points[i].y;
+      waypoint_w_normal.z = cloud->points[i].z;
 
 
-         fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
-                 waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
-                 angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
-                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
-         toolpath_w_normal->push_back(waypoint_jump_w_normal);
+      //--------------------------code ------------xavier getting the quaternion-----------------------
+      Eigen::Vector3d norm(waypoint_w_normal.normal_x, waypoint_w_normal.normal_y, waypoint_w_normal.normal_z);
+      Eigen::Quaterniond q;
+      q.setFromTwoVectors(Eigen::Vector3d(0,0,1), norm);
+      q.normalize();
+      //std::cout << "This normal" << norm.transpose() << std::endl;
+      //std::cout << "This quaternion consists of a scalar " << q.w() << " and a vector " << std::endl << q.vec().transpose() << std::endl;
+      Eigen::Matrix<double,3,3> rotationMatrix;
+      rotationMatrix = q.toRotationMatrix();
+      //std::cout << "This normal" << rotationMatrix << std::endl;
+      //Eigen::AngleAxisd newAngleAxis(rotationMatrix);
+      //Eigen::Vector3d euler = rotationMatrix.eulerAngles(0, 1, 2);
 
+      //manual calculations, still valid
+      Eigen::Vector3d angle;
+      double roll  = atan2( rotationMatrix(2,1),rotationMatrix(2,2) );
+      double pitch = atan2( -rotationMatrix(2,0), std::pow( rotationMatrix(2,1)*rotationMatrix(2,1) +rotationMatrix(2,2)*rotationMatrix(2,2) ,0.5  )  );
+      double yaw   = atan2( rotationMatrix(1,0),rotationMatrix(0,0) );
+      Eigen::Vector3d quat;
+      quat=q.vec();
+      angle[0]=roll*180/(std::atan(1.0)*4);
+      if (angle[0]>180){
+      //   angle[0]=angle[0]-360;
+      }
+      angle[1]=pitch*180/(std::atan(1.0)*4);
+      if (angle[1]>180){
+      //  angle[1]=angle[1]-360;
+      }
+      angle[2]=yaw*180/(std::atan(1.0)*4);
+      if (angle[2]>180){
+        //angle[2]=angle[2]-360;
+      }
 
-         fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
-                 waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
-                 angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
-                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '1'<<'\n';
-         toolpath_w_normal->push_back(waypoint_w_normal);
+      pcl::PointNormal waypoint_jump_w_normal;
+      //float lift_height_ = 0.05;
+      waypoint_jump_w_normal.x = waypoint_w_normal.x - waypoint_w_normal.normal_x*lift_height_;
+      waypoint_jump_w_normal.y = waypoint_w_normal.y - waypoint_w_normal.normal_y*lift_height_;
+      waypoint_jump_w_normal.z = waypoint_w_normal.z - waypoint_w_normal.normal_z*lift_height_;
+      waypoint_jump_w_normal.normal_x = waypoint_w_normal.normal_x;
+      waypoint_jump_w_normal.normal_y = waypoint_w_normal.normal_y;
+      waypoint_jump_w_normal.normal_z = waypoint_w_normal.normal_z;
+      waypoint_jump_w_normal.curvature = waypoint_w_normal.curvature;
 
+      fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+              waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+              angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+              q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+      toolpath_w_normal->push_back(waypoint_jump_w_normal);
 
+      fout << waypoint_w_normal.x << ';' <<        waypoint_w_normal.y << ';' <<        waypoint_w_normal.z << ';' <<
+              waypoint_w_normal.normal_x << ';' << waypoint_w_normal.normal_y << ';' << waypoint_w_normal.normal_z << ';' <<
+              angle[0] << ';' << angle[1] << ';'<< angle[2] <<';'<<
+              q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '1'<<'\n';
+      toolpath_w_normal->push_back(waypoint_w_normal);
 
-         fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
-                 waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
-                 angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
-                 q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
-         toolpath_w_normal->push_back(waypoint_jump_w_normal);
+      fout << waypoint_jump_w_normal.x << ';' <<        waypoint_jump_w_normal.y << ';' <<        waypoint_jump_w_normal.z << ';' <<
+              waypoint_jump_w_normal.normal_x << ';' << waypoint_jump_w_normal.normal_y << ';' << waypoint_jump_w_normal.normal_z << ';' <<
+              angle[0] << ';' << angle[1] << ';' << angle[2] << ';' <<
+              q.w()    << ';' << q.x()    << ';' << q.y()    << ';' << q.z()    << ';' << '0'<<'\n';
+      toolpath_w_normal->push_back(waypoint_jump_w_normal);
 
-
-      }//end of for loop
+    }//end of for loop
     pcl::io::savePCDFile("data/coupons/tool_path_back_projected_w_lift.pcd", *toolpath_w_normal);
     fout.close(); //close the file
 

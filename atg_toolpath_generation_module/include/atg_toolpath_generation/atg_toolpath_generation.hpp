@@ -29,6 +29,8 @@ class ATG_TPG
     int     forced_resolution_;
     float   hole_patch_size_  ;
     float   lift_height_=50   ;
+    float   ksearch_radius_   ;
+    float   ksearch_threshold_;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr ReadTXT(std::string file_name);
     Eigen::Matrix4f Bounding_Box(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);

@@ -2272,6 +2272,8 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
   int     Forced_Resolution = ui.checkbox_toolpath_resolution_forced->isChecked();
   float   Hole_Patch_Size   = ui.spinBox_toolpath_hole_patch ->value();
   float   Lift_Height       = 0;
+  float   ksearch_radius    = ui.doubleSpinBox_KSearch_diameter_size->value()/2;
+  float   ksearch_threshold = ui.doubleSpinBox_KSearch_contact_threshold->value();
   //Eigen::Vector4f centroid = coupon.centroid;
   if(ui.comboBox_tool_selection->currentText()=="Nakanishi Tool")
   {
@@ -2302,21 +2304,23 @@ void ATG_Window::pushButton_plot_toolpath_clicked()
   std::string custer_no = std::to_string(ui.spinBox_clusters->value());
   std::string file_name = in_data_file_dir_.toStdString()+"clusters/cluster_"+custer_no+".pcd";
   std::string cmd = file_name + " ";
-  cmd += std::to_string(External_on      )+" ";
-  cmd += std::to_string(Internal_on      )+" ";
-  cmd += std::to_string(Resolution       )+" ";
-  cmd += std::to_string(Step_Size        )+" ";
-  cmd += std::to_string(Offset           )+" ";
-  cmd += std::to_string(Path_Rotate      )+" ";
-  cmd += std::to_string(Downsample       )+" ";
-  cmd += std::to_string(ksearch_tp       )+" ";
-  cmd += std::to_string(Normal_Flip      )+" ";
-  cmd += std::to_string(section_range_min)+" ";
-  cmd += std::to_string(section_range_max)+" ";
-  cmd += std::to_string(reverse_toolpath )+" ";
-  cmd += std::to_string(Forced_Resolution)+" ";
-  cmd += std::to_string(Hole_Patch_Size  )+" ";
-  cmd += std::to_string(Lift_Height      );
+  cmd += std::to_string(External_on      )+" ";//2
+  cmd += std::to_string(Internal_on      )+" ";//3
+  cmd += std::to_string(Resolution       )+" ";//4
+  cmd += std::to_string(Step_Size        )+" ";//5
+  cmd += std::to_string(Offset           )+" ";//6
+  cmd += std::to_string(Path_Rotate      )+" ";//7
+  cmd += std::to_string(Downsample       )+" ";//8
+  cmd += std::to_string(ksearch_tp       )+" ";//9
+  cmd += std::to_string(Normal_Flip      )+" ";//10
+  cmd += std::to_string(section_range_min)+" ";//11
+  cmd += std::to_string(section_range_max)+" ";//12
+  cmd += std::to_string(reverse_toolpath )+" ";//13
+  cmd += std::to_string(Forced_Resolution)+" ";//14
+  cmd += std::to_string(Hole_Patch_Size  )+" ";//15
+  cmd += std::to_string(Lift_Height      )+" ";//16
+  cmd += std::to_string(ksearch_radius   )+" ";//17
+  cmd += std::to_string(ksearch_threshold)+" ";//18
 
   ui.progressBar->setValue(5);
   std::string toolpath_text = ui.comboBox_toolpath_selection->currentText().toStdString();

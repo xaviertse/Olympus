@@ -31,6 +31,8 @@ int main(int argc, char **argv)
   app.forced_resolution_=   atoi(argv[14]);
   app.hole_patch_size_  = strtof(argv[15],NULL);
   app.lift_height_      = strtof(argv[16],NULL);
+  app.ksearch_radius_   = strtof(argv[17],NULL); //point only
+  app.ksearch_threshold_= strtof(argv[18],NULL); //point only
   app.Point(filename);
 
   std::cout << "Successful run of atg toolpath Point!\n";
