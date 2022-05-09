@@ -3688,6 +3688,7 @@ bool ATG_Window::draw_cluster(int mode,int draw_cluster_no)//mode 0=append, 1=su
   std::cout << "Loading: cluster_ " << draw_cluster_no << std::endl;
   cluster_name ="clustersviz_"+std::to_string(draw_cluster_no);
   log(Info, std::string("loading cluster point cloud data....."));
+  g_cloud_cluster_=cloud_cluster; //sync visualised cloud_cluster as g_cloud_cluster, used for view toolpath identification
 
   viewer->removePointCloud(cluster_name);
   viewer->addPointCloud (cloud_cluster, cluster_name);
