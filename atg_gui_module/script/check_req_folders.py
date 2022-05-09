@@ -42,7 +42,7 @@ def check_file(file_input):
 
 #check for external folder and file, used for data transfer and cache
 check_folder("/home/data/backup")
-check_folder("/home/data/cache/URScript")
+check_folder("/home/data/cache/urscript")
 check_folder("/home/data/cache/RAPID")
 check_folder("/home/data/cache/toolpath")
 check_file('/home/data/cache/atg_configuration.ini')

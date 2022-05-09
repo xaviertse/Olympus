@@ -450,6 +450,10 @@ void ATG_Window::readQSettings() //read settings when value change
     ui.spinBox_path_section_range_max->setValue(readValue.toDouble());
     readBool = settings.value(property_name+"/Toolsettings/reverse_toolpath", "0").toBool();
     ui.checkbox_reverse_toolpath->setChecked(readBool);
+    readValue = settings.value(property_name+"/Toolsettings/comboBox_toolpath_selection", "0").toString();
+    ui.comboBox_toolpath_selection->setCurrentIndex(readValue.toDouble());
+    readBool = settings.value(property_name+"/Toolsettings/checkBox_viewdir_toolpath", "0").toBool();
+    ui.checkBox_viewdir_toolpath->setChecked(readBool);
 
     property_name = "tab_masking_tool";
     readValue = settings.value(property_name+"/param/feedrate", "10").toString();
@@ -709,6 +713,8 @@ void ATG_Window::writeQSettings() //write settings when value change
     settings.setValue(property_name+"/Toolsettings/range_min",    QString::number(ui.spinBox_path_section_range_min ->value(),'f',2));
     settings.setValue(property_name+"/Toolsettings/range_max",    QString::number(ui.spinBox_path_section_range_max ->value(),'f',2));
     settings.setValue(property_name+"/Toolsettings/reverse_toolpath",     QString::number(ui.checkbox_reverse_toolpath ->isChecked()));
+    settings.setValue(property_name+"/Toolsettings/comboBox_toolpath_selection",   QString::number(ui.comboBox_toolpath_selection ->currentIndex()));
+    settings.setValue(property_name+"/Toolsettings/checkBox_viewdir_toolpath",     QString::number(ui.checkBox_viewdir_toolpath ->isChecked()));
 
     property_name = "Segmentation";
     settings.setValue(property_name+"/param/KSearch",       QString::number(ui.spinBox_KSearch         ->value()));
@@ -1395,9 +1401,16 @@ void ATG_Window::pushButton_clear_clusters_clicked()
 
 void ATG_Window::pushButton_load_backup_clusters_clicked ()
 {
+  //Step 0: Check if file is open
   //Step 1: Overwrite current cluster folder with backup folder
   //Step 2: Load all files in cluster folder & Show cluster no. if valid
   //Step 3: Show normal if valid
+  if (g_short_filename_.length()==0)
+  {
+    std::string log_string = "No file loaded, please open data file before loading backup clusters.";
+    log(Info,log_string);
+    return;
+  }
   std::string cmd = "rosrun atg_gui duplicate_files.py "+
                               ex_data_file_dir_.toStdString()+"backup/"+g_short_filename_.toStdString()+" "+  // /home/data/ + backup/ + filename
                               in_data_file_dir_.toStdString()+"clusters";                                     // data/coupons/ + clusters
@@ -1411,7 +1424,7 @@ void ATG_Window::pushButton_load_backup_clusters_clicked ()
       return;
   }
   std::cout << "Removing the old cluster files....\n";
-  std::cout << "Duplicating the backup cluster files....\n";
+  std::cout << "Duplicating the backup cluster files from " << ex_data_file_dir_.toStdString() << "backup/" << g_short_filename_.toStdString() << std::endl;
   std::string log_string = "Loaded clusters from "+ex_data_file_dir_.toStdString()+"backup/"+g_short_filename_.toStdString();
   log(Info,log_string);
   viewer->removeAllPointClouds();
@@ -2424,7 +2437,7 @@ void ATG_Window::pushButton_draw_simple_toolpath_clicked(){
   ui.qvtkWidget->update();
 
   //show arrows as lines and cones
-  if (ui.checkBox_simple_toolpath->isChecked()){
+  if (ui.checkBox_viewdir_toolpath->isChecked()){
     PointCloud<PointXYZ>::Ptr toolpath (g_cloud_toolpath_);
 
     //toolpath =coupon.load_toolpath(toolpath_no);
