@@ -248,7 +248,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -7053,7 +7053,7 @@ Duration [s]</string>
                  </property>
                  <property name="text">
                   <string>Flowrate
-[ml/s]</string>
+[RPM]</string>
                  </property>
                 </widget>
                </item>
@@ -7075,6 +7075,9 @@ Duration [s]</string>
                  </property>
                  <property name="locale">
                   <locale language="English" country="UnitedStates"/>
+                 </property>
+                 <property name="decimals">
+                  <number>0</number>
                  </property>
                 </widget>
                </item>
@@ -7272,7 +7275,7 @@ Threshold</string>
             </font>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab_12">
             <attribute name="title">

@@ -47,310 +47,455 @@ namespace robotMotion
     // ss  << "movej([-0.7601145807261123, -1.925313457229536, 1.4271208291636501, -1.1406326407517442, -1.5621569587688118, -0.9518539657810257], a=1.3962634015954636, v=1.0471975511965976)"  << "\n";
     // ss  << "end"  << "\n";
     ss.clear();
-    ss << "def rosmove():\n";
-    ss << "\tset_tcp(" << config_.TCP_info << ")\n";
 
-    double velocity      = config_.FEEDRATE/1000;
-    double jump_velocity = config_.JUMPSPEED/1000;
-    double flowrate = 0; if(config_.OPT1!=0)flowrate=config_.OPT1/6*1.0;
-
-    std::cout << "Feedrate = "<< velocity << "mm/s,   Flowrate = " << flowrate << "ml/s,   JumpSpeed = " << jump_velocity << "mm/s"<<std::endl;
-    // std::string variable_command = "a=1.5, v=0.05,r=0.008"; // a=2.5, v=0.35,r=0.008 a=4.5, v=0.65,r=0.003
-    std::stringstream variable_command,variable_command1,variable_command2,variable_command2_r0;
-    //variable_command << "a=1.5, v=" << config_.masking_tool_velocity/1000 << ",r=0.0003";//r=0.001
-    //variable_command << "a=1.5, v=" << config_.FEEDRATE/1000 << ",r=0.1";//r=0.001 0.0003
-    variable_command1 << "a=1.5, v=";
-    variable_command2 << ",r=";//0.0";//,r=0.0//0.005//5mm
-    if (config_.BLEND_ZONE==0) variable_command2 << "0.0";
-    else variable_command2 << config_.BLEND_ZONE/1000;
-    variable_command2_r0 << ",r=0";
-    // std::string s = ss.str();
-//        Eigen::Affine3d cart_pose;
-//        descartes_trajectory::JointTrajectoryPt::getCartesianPoses(*robot_model_ptr_.get(),cart_pose);
-//        std::cout <<"cart_pose" << cart_pose.matrix() << "\n" << std::endl;
-
-    int last_IO = 0,last_last_IO = 0;
-    for(int i = 0; i < moveit_traj.joint_trajectory.points.size(); i++)
+    if(config_.PROCESS!="NDT")
     {
-      double pose_rotvec_quat[10];  //x,y,z,rx,ry,rz josh added to calculate cartesian from joint pose
-      fromJointToCart(path, i, pose_rotvec_quat, rot_mat);// josh added to calculate cartesian from joint pose
-//          std::cout << "fromJointToCart = " << pose_n_rot_vec[0] << ", " << pose_n_rot_vec[1] << ", " << pose_n_rot_vec[2] << ", "
-//                                            << pose_n_rot_vec[3] << ", " << pose_n_rot_vec[4] << ", " << pose_n_rot_vec[5] << ", " << std::endl;
-//          float feedrate_scaled = config_.FEEDRATE/1000; if (i==0) feedrate_scaled = config_.JUMPSPEED/1000;
+      ss << "def rosmove():\n";
+      ss << "\tset_tcp(" << config_.TCP_info << ")\n";
+      double velocity      = config_.FEEDRATE/1000;
+      double jump_velocity = config_.JUMPSPEED/1000;
+      double flowrate = 0; if(config_.OPT1!=0)flowrate=config_.OPT1/6*1.0;
 
-      int curr_IO = 0;
-      if(std::getline(indata, line))
+      std::cout << "Feedrate = "<< velocity << "mm/s,   Flowrate = " << flowrate << "ml/s,   JumpSpeed = " << jump_velocity << "mm/s"<<std::endl;
+      // std::string variable_command = "a=1.5, v=0.05,r=0.008"; // a=2.5, v=0.35,r=0.008 a=4.5, v=0.65,r=0.003
+      std::stringstream variable_command,variable_command1,variable_command2,variable_command2_r0;
+      //variable_command << "a=1.5, v=" << config_.masking_tool_velocity/1000 << ",r=0.0003";//r=0.001
+      //variable_command << "a=1.5, v=" << config_.FEEDRATE/1000 << ",r=0.1";//r=0.001 0.0003
+      variable_command1 << "a=1.5, v=";
+      variable_command2 << ",r=";//0.0";//,r=0.0//0.005//5mm
+      if (config_.BLEND_ZONE==0) variable_command2 << "0.0";
+      else variable_command2 << config_.BLEND_ZONE/1000;
+      variable_command2_r0 << ",r=0";
+      // std::string s = ss.str();
+//          Eigen::Affine3d cart_pose;
+//          descartes_trajectory::JointTrajectoryPt::getCartesianPoses(*robot_model_ptr_.get(),cart_pose);
+//          std::cout <<"cart_pose" << cart_pose.matrix() << "\n" << std::endl;
+
+      int last_IO = 0,last_last_IO = 0;
+      for(int i = 0; i < moveit_traj.joint_trajectory.points.size(); i++)
       {
-        std::stringstream lineStream(line);
-        std::string cell;
-        int cell_no = 0;
-        while (std::getline(lineStream, cell, ';'))
+        double pose_rotvec_quat[10];  //x,y,z,rx,ry,rz josh added to calculate cartesian from joint pose
+        fromJointToCart(path, i, pose_rotvec_quat, rot_mat);// josh added to calculate cartesian from joint pose
+//            std::cout << "fromJointToCart = " << pose_n_rot_vec[0] << ", " << pose_n_rot_vec[1] << ", " << pose_n_rot_vec[2] << ", "
+//                                              << pose_n_rot_vec[3] << ", " << pose_n_rot_vec[4] << ", " << pose_n_rot_vec[5] << ", " << std::endl;
+//            float feedrate_scaled = config_.FEEDRATE/1000; if (i==0) feedrate_scaled = config_.JUMPSPEED/1000;
+
+        int curr_IO = 0;
+        if(std::getline(indata, line))
         {
-            if(cell_no==6)
-            {
-              std::string::size_type sz;
-              curr_IO = int(std::stod(cell));
-//              std::cout << "IO = " << curr_IO << std::endl << std::endl;//josh debug
-            }
-            cell_no++;
+          std::stringstream lineStream(line);
+          std::string cell;
+          int cell_no = 0;
+          while (std::getline(lineStream, cell, ';'))
+          {
+              if(cell_no==6)
+              {
+                std::string::size_type sz;
+                curr_IO = int(std::stod(cell));
+//                std::cout << "IO = " << curr_IO << std::endl << std::endl;//josh debug
+              }
+              cell_no++;
+          }
         }
-      }
 
 
-            //joe's  '\tmovel([j0,j1,j2,j3,j4,j5], a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
-            //josh's '\tmovel(get_inverse_kin(p[x,y,z,rx,ry,rz],[j0,j1,j2,j3,j4,j5]), a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
-            //josh's script for movel using joint angles only --START================
-            double z = pose_rotvec_quat[2];
-            /*
-            if ((last_IO==0 && curr_IO==1)||(last_IO==0 && curr_IO==0))
-            {
-                if(z_pos[1]>0) {                                 //for fixed z and lift
-                    z = z_pos[1];                                //for fixed z and lift
-                    if(last_IO==0 && curr_IO==1) z = z_pos[0];   //for fixed z and lift
-                }                                                //for fixed z and lift
-                ss  << "\tmovel(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), ";//<< //j6
-                if(last_IO==0 && curr_IO==1)//point before command on, make r=0 else r=rvalue
-                {
-                    ss << variable_command1.str() << config_.FEEDRATE/1000 <<
-                    variable_command2_r0.str() << ")\n";
-                }
-                else
-                {
-                    ss << variable_command1.str() << config_.JUMPSPEED/1000 <<
-                    variable_command2.str() << ")\n";
-                }
-            }
-            else
-            {
-                if(z_pos[0]>0) z = z_pos[0];                        //for fixed z and lift
-                ss  << "\tmovep(get_inverse_kin(p["  <<//ss  << "\tmovep(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), ";//<< //j6
-                if(last_IO==1 && curr_IO==0)//point before command off, make r=0 else r=rvalue
-                {
-                    ss << variable_command1.str() << config_.FEEDRATE/1000 <<
-                    variable_command2_r0.str() << ")\n";
-                }
-                else
-                {
-                    ss << variable_command1.str() << config_.FEEDRATE/1000 <<
-                    variable_command2.str() << ")\n";
-                }
-            }
+        //joe's  '\tmovel([j0,j1,j2,j3,j4,j5], a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
+        //josh's '\tmovel(get_inverse_kin(p[x,y,z,rx,ry,rz],[j0,j1,j2,j3,j4,j5]), a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
+        //josh's script for movel using joint angles only --START================
+        double z = pose_rotvec_quat[2];
+        // Situation in aplhabets, state in []
+        //             [0]__B__[0]
+        //               |      |
+        //              A|      |C
+        //   ____________|      |____________
+        //  [1] E [1] E [0]    [1] D [1] D [1]
+        if(last_last_IO==1 && last_IO==0 && curr_IO==0)//A, jump's start, move up slowly
+        {
+            if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2.str() << ")\n";
+        }
+        else if(last_IO==0 && curr_IO==0)//B, jump traverse, move to next quickly
+        {
+            if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << jump_velocity <<
+            variable_command2.str() << ")\n";
+        }
+        else if(last_IO==0 && curr_IO==1)//C, jump end, slow move down, start dispense after reach
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2_r0.str() << ")\n";
+            ss  << "\tset_analog_out(0,0.2)" << "\n" ;//for air flowrate
+            ss  << "\tset_digital_out(0,True)" << "\n" ;//for toggle air
+            //ss  << "\tset_analog_out(1," << config_.FLOWRATE << ")" << "\n" ;//for eco
+            ss  << "\tset_analog_out(1," << flowrate << ")" << "\n" ;//for eco
+            ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico toggle flowrate
+            ss  << "\tset_digital_out(4,True)" << "\n" ;//for eco
+            ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco penp 0.3
+        }
+        else if(last_IO==1 && curr_IO==1)//D, masking traverse, move to point slowly
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            ss  << "\tmovep(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2.str() << ")\n";
+        }
+        else if(last_IO==1 && curr_IO==0)//E, masking end, move to point slowly, stop mask
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2_r0.str() << ")\n";
+            ss  << "\tset_analog_out(0,0)" << "\n" ;//for air flowrate
+            ss  << "\tset_digital_out(0,False)" << "\n" ;//for toggle air
+            ss  << "\tset_analog_out(1,0)" << "\n" ;//for eco toggle flowrate
+            ss  << "\tset_digital_out(1,False)" << "\n" ;//for pico
+            ss  << "\tset_digital_out(4,False)" << "\n" ;//for eco
+            ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen 0.3
+        }
+        last_last_IO = last_IO;
+        last_IO = curr_IO;
 
+        Eigen::Affine3d tmp_transl(Eigen::Translation3d(pose_rotvec_quat[0],pose_rotvec_quat[1],pose_rotvec_quat[2]));
+        Eigen::Affine3d tmp_rot; tmp_rot = rot_mat;       //josh , temp for output of pose in RViz to visualize
+        Eigen::Affine3d tmp_pose = tmp_transl *  tmp_rot; //josh , temp for output of pose in RViz to visualize
+        poses.push_back(tmp_pose);                        //josh , temp for output of pose in RViz to visualize
 
-            //read and turn on/off IO
+        /*joe's script for movel using joint angles only --START================
+          ss  << "\tmovel([" <<
+          moveit_traj.joint_trajectory.points[i].positions[0] << ","   <<
+          moveit_traj.joint_trajectory.points[i].positions[1] << ","   <<
+          moveit_traj.joint_trajectory.points[i].positions[2] << ","   <<
+          moveit_traj.joint_trajectory.points[i].positions[3] << ","   <<
+          moveit_traj.joint_trajectory.points[i].positions[4] << ","   <<
+          moveit_traj.joint_trajectory.points[i].positions[5] << "], " <<
+          variable_command1.str() << feedrate_scaled <<
+          variable_command2.str() << ")\t\t # process motion\n";
+        //joe's script for movel using joint angles only --END===================
 
-            if(last_IO==0 && curr_IO==1)//turn on
-            {
+          if(i==2){ss  << "\tsleep(10)" << "\n" ;}//just to check zeropos
+          if(i==5){//if(i==1){ //command inserted to check zero pos--line1-4
+              ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico
+              ss  << "\tset_digital_out(2,True)" << "\n" ;//for eco
+              ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
+        //originally input for turning on/off IO, no ref
+          if(i==1){//if(i==1){ //command inserted to check zero pos--line1-4
               ss  << "\tset_analog_out(1," << config_.FLOWRATE << ")" << "\n" ;//for eco
               ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico toggle flowrate
-              ss  << "\tset_digital_out(4,True)" << "\n" ;//for eco
-              ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco penp 0.3
-            }
-            if(last_IO==1 && curr_IO==0)//turn off
-            {
-
+              ss  << "\tset_digital_out(2,True)" << "\n" ;//for eco
+              ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
+          }
+          if(i==moveit_traj.joint_trajectory.points.size()-2){
+              ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
               ss  << "\tset_analog_out(1,0)" << "\n" ;//for eco toggle flowrate
               ss  << "\tset_digital_out(1,False)" << "\n" ;//for pico
-              ss  << "\tset_digital_out(4,False)" << "\n" ;//for eco
-              ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen 0.3
-            }
-            */
-            // Situation in aplhabets, state in []
-            //             [0]__B__[0]
-            //               |      |
-            //              A|      |C
-            //   ____________|      |____________
-            //  [1] E [1] E [0]    [1] D [1] D [1]
-            if(last_last_IO==1 && last_IO==0 && curr_IO==0)//A, jump's start, move up slowly
-            {
-                if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
-                ss  << "\tmovel(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
-                variable_command1.str() << velocity <<
-                variable_command2.str() << ")\n";
-            }
-            else if(last_IO==0 && curr_IO==0)//B, jump traverse, move to next quickly
-            {
-                if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
-                ss  << "\tmovel(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
-                variable_command1.str() << jump_velocity <<
-                variable_command2.str() << ")\n";
-            }
-            else if(last_IO==0 && curr_IO==1)//C, jump end, slow move down, start dispense after reach
-            {
-                if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
-                ss  << "\tmovel(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
-                variable_command1.str() << velocity <<
-                variable_command2_r0.str() << ")\n";
-                ss  << "\tset_analog_out(0,0.2)" << "\n" ;//for air flowrate
-                ss  << "\tset_digital_out(0,True)" << "\n" ;//for toggle air
-                //ss  << "\tset_analog_out(1," << config_.FLOWRATE << ")" << "\n" ;//for eco
-                ss  << "\tset_analog_out(1," << flowrate << ")" << "\n" ;//for eco
-                ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico toggle flowrate
-                ss  << "\tset_digital_out(4,True)" << "\n" ;//for eco
-                ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco penp 0.3
-            }
-            else if(last_IO==1 && curr_IO==1)//D, masking traverse, move to point slowly
-            {
-                if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
-                ss  << "\tmovep(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
-                variable_command1.str() << velocity <<
-                variable_command2.str() << ")\n";
-            }
-            else if(last_IO==1 && curr_IO==0)//E, masking end, move to point slowly, stop mask
-            {
-                if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
-                ss  << "\tmovel(get_inverse_kin(p["  <<
-                pose_rotvec_quat[0] << "," << //x
-                pose_rotvec_quat[1] << "," << //y
-                z << "," << //z //pose_rotvec_quat[2] << "," << //z
-                pose_rotvec_quat[3] << "," << //Rx
-                pose_rotvec_quat[4] << "," << //Ry
-                pose_rotvec_quat[5] << "],[" << //Rz
-                moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
-                moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
-                moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
-                moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
-                moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
-                moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
-                variable_command1.str() << velocity <<
-                variable_command2_r0.str() << ")\n";
-                ss  << "\tset_analog_out(0,0)" << "\n" ;//for air flowrate
-                ss  << "\tset_digital_out(0,False)" << "\n" ;//for toggle air
-                ss  << "\tset_analog_out(1,0)" << "\n" ;//for eco toggle flowrate
-                ss  << "\tset_digital_out(1,False)" << "\n" ;//for pico
-                ss  << "\tset_digital_out(4,False)" << "\n" ;//for eco
-                ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen 0.3
-            }
-            last_last_IO = last_IO;
-            last_IO = curr_IO;
-
-            Eigen::Affine3d tmp_transl(Eigen::Translation3d(pose_rotvec_quat[0],pose_rotvec_quat[1],pose_rotvec_quat[2]));
-            Eigen::Affine3d tmp_rot; tmp_rot = rot_mat;       //josh , temp for output of pose in RViz to visualize
-            Eigen::Affine3d tmp_pose = tmp_transl *  tmp_rot; //josh , temp for output of pose in RViz to visualize
-            poses.push_back(tmp_pose);                        //josh , temp for output of pose in RViz to visualize
-
-            //joe's script for movel using joint angles only --START================
-//            ss  << "\tmovel([" <<
-//            moveit_traj.joint_trajectory.points[i].positions[0] << ","   <<
-//            moveit_traj.joint_trajectory.points[i].positions[1] << ","   <<
-//            moveit_traj.joint_trajectory.points[i].positions[2] << ","   <<
-//            moveit_traj.joint_trajectory.points[i].positions[3] << ","   <<
-//            moveit_traj.joint_trajectory.points[i].positions[4] << ","   <<
-//            moveit_traj.joint_trajectory.points[i].positions[5] << "], " <<
-//            variable_command1.str() << feedrate_scaled <<
-//            variable_command2.str() << ")\t\t # process motion\n";
-            //joe's script for movel using joint angles only --END===================
-
-//            if(i==2){ss  << "\tsleep(10)" << "\n" ;}//just to check zeropos
-//            if(i==5){//if(i==1){ //command inserted to check zero pos--line1-4
-//                ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico
-//                ss  << "\tset_digital_out(2,True)" << "\n" ;//for eco
-//                ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
-            //originally input for turning on/off IO, no ref
-//            if(i==1){//if(i==1){ //command inserted to check zero pos--line1-4
-//                ss  << "\tset_analog_out(1," << config_.FLOWRATE << ")" << "\n" ;//for eco
-//                ss  << "\tset_digital_out(1,True)" << "\n" ;//for pico toggle flowrate
-//                ss  << "\tset_digital_out(2,True)" << "\n" ;//for eco
-//                ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
-//            }
-//            if(i==moveit_traj.joint_trajectory.points.size()-2){
-//                ss  << "\tsleep(0.3)" << "\n" ; //dispensing delay for eco pen
-//                ss  << "\tset_analog_out(1,0)" << "\n" ;//for eco toggle flowrate
-//                ss  << "\tset_digital_out(1,False)" << "\n" ;//for pico
-//                ss  << "\tset_digital_out(2,False)" << "\n" ;//for eco
-//            }
+              ss  << "\tset_digital_out(2,False)" << "\n" ;//for eco
+          }*/
 
 
+      }
+    }
+
+    if(config_.PROCESS=="NDT")
+    {
+
+      ss << "def rosmove():\n";
+      ss << "\twaypoint_Before:=p[0,0,0,0,0,0]\n";
+      ss << "\twaypoint_After:=p[0,0,0,0,0,0]\n";
+      ss << "\twaypoint_Target:=p[0,0,0,0,0,0]\n";
+      ss << "\tnum_offs:=0\n";
+      ss << "\tf_value:=3\n";
+      ss << "\toffset_num:=20\n";
+      ss << "\tdef Force Sensing (pose_1,offset,f_value,vel)\n";
+      ss << "\t  num_offs = offset/1000\n";
+      ss << "\t  Waypoint_target = pose_1\n";
+      ss << "\t  Waypoint_Before = pose_trans(pose_1, p[0,0,-num_offs,0,0,0])\n";
+      ss << "\t  #Waypoint_After  = pose_trans(pose_1, p[0,0,num_offs,0,0,0])\n";
+      ss << "\t  rq_zero_sensor()\n";
+      ss << "\t  sleep(1.0)\n";
+      ss << "\t  global thread_flag_4=0\n";
+      ss << "\t  thread Thread_if_4():\n";
+      ss << "\t  movel(Waypoint_Before,a=1,v=vel ,t=0,r=0)\n";
+      ss << "\t  movel(Waypoint_target,a=1,v=0.01,t=0,r=0)\n";
+      ss << "\t  #movel(Waypoint_After,a=1,v=0.01,t=0,r=0)\n";
+      ss << "\t  thread_flag_4 = 1\n";
+      ss << "\t  end\n";
+      ss << "\t  if (get_sensor_fz() >= -f_value):\n";
+      ss << "\t    global thread_handler_4 = run Thread_if_4()\n";
+      ss << "\t    while (thread_flag_4 == 0):\n";
+      ss << "\t     if not(get_sensor_fz() >= -f_value):\n";
+      ss << "\t       kill thread_handler_4\n";
+      ss << "\t       thread_flag_4 = 2\n";
+      ss << "\t     else:\n";
+      ss << "\t       sync()\n";
+      ss << "\t     end\n";
+      ss << "\t    end\n";
+      ss << "\t  else:\n";
+      ss << "\t    thread_flag_4 = 2\n";
+      ss << "\t  end\n";
+      ss << "\tend\n";
+
+      ss << "\tset_tcp(" << config_.TCP_info << ")\n";
+      double velocity      = config_.FEEDRATE/1000;
+      double jump_velocity = config_.JUMPSPEED/1000;
+      double flowrate = 0; if(config_.OPT1!=0)flowrate=config_.OPT1/2000*10;//TBC
+      double force         = config_.OPT2;
+      double wait_time     = config_.OPT3;
+
+      std::cout << "Feedrate = "<< velocity << "mm/s,   JumpSpeed = " << jump_velocity << "mm/s"<<std::endl;
+      std::cout << "Flowrate = "<< flowrate << "v or " << config_.OPT1 << "RPM,   Force = " << force << "N,   Wait_Time = " << wait_time << "s"<<std::endl;
+
+      // std::string variable_command = "a=1.5, v=0.05,r=0.008"; // a=2.5, v=0.35,r=0.008 a=4.5, v=0.65,r=0.003
+      std::stringstream variable_command,variable_command1,variable_command2,variable_command2_r0;
+      variable_command1 << "a=1.5, v=";
+      variable_command2 << ",r=";   //0.0";//,r=0.0//0.005//5mm
+      if (config_.BLEND_ZONE==0) variable_command2 << "0.0";
+      else variable_command2 << config_.BLEND_ZONE/1000;
+      variable_command2_r0 << ",r=0";
+
+      int last_IO = 0,last_last_IO = 0;
+      for(int i = 0; i < moveit_traj.joint_trajectory.points.size(); i++)
+      {
+        double pose_rotvec_quat[10];  //x,y,z,rx,ry,rz josh added to calculate cartesian from joint pose
+        fromJointToCart(path, i, pose_rotvec_quat, rot_mat);// josh added to calculate cartesian from joint pose
+//            std::cout << "fromJointToCart = " << pose_n_rot_vec[0] << ", " << pose_n_rot_vec[1] << ", " << pose_n_rot_vec[2] << ", "
+//                                              << pose_n_rot_vec[3] << ", " << pose_n_rot_vec[4] << ", " << pose_n_rot_vec[5] << ", " << std::endl;
+//            float feedrate_scaled = config_.FEEDRATE/1000; if (i==0) feedrate_scaled = config_.JUMPSPEED/1000;
+
+        int curr_IO = 0;
+        if(std::getline(indata, line))
+        {
+          std::stringstream lineStream(line);
+          std::string cell;
+          int cell_no = 0;
+          while (std::getline(lineStream, cell, ';'))
+          {
+              if(cell_no==6)
+              {
+                std::string::size_type sz;
+                curr_IO = int(std::stod(cell));
+//                std::cout << "IO = " << curr_IO << std::endl << std::endl;//josh debug
+              }
+              cell_no++;
+          }
         }
-        // Turn off masking dispense
-        // ss  << "\tset_digital_out(1,False)" << "\n" ;
-        ss  << "end\n" ;
 
-        if(bSaveToFile) {
-            ROS_INFO_STREAM("\tsaving...");
-            std::ofstream filePtr;
-            filePtr.open(filename.c_str(), std::ofstream::out);
-            // std::string dataToWrite = ss.str();
-            dataToWrite.clear();
-            dataToWrite = ss.str();
-            filePtr << dataToWrite.c_str();
-            filePtr.close();
+
+        //joe's  '\tmovel([j0,j1,j2,j3,j4,j5], a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
+        //josh's '\tmovel(get_inverse_kin(p[x,y,z,rx,ry,rz],[j0,j1,j2,j3,j4,j5]), a=1.5, v=feedrate_scale, r=0.0003)\t\t #process motion\n'
+        //josh's script for movel using joint angles only --START================
+        double z = pose_rotvec_quat[2];
+        // Situation in aplhabets, state in []
+        //             [0]__B__[0]
+        //               |      |
+        //              A|      |C
+        //   ____________|      |____________
+        //  [1] E [1] E [0]    [1] D [1] D [1]
+        if(last_last_IO==1 && last_IO==0 && curr_IO==0)//A, jump's start, move up slowly
+        {
+            if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2.str() << ")#100\n";
         }
-        publishPosesMarkers(poses); //josh , temp for output of pose in RViz to visualize
-        ros::spinOnce();            //josh , temp for output of pose in RViz to visualize
+        else if(last_IO==0 && curr_IO==0)//B, jump traverse, move to next quickly
+        {
+            if(z_pos[1]>0)z=z_pos[1];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << jump_velocity <<
+            variable_command2.str() << ")#00\n";
+        }
+        else if(last_IO==0 && curr_IO==1)//C, jump end, slow move down, start probe as reach
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            /*ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2_r0.str() << ")\n";*/
 
-     ROS_INFO_STREAM("Done\n\n");
+            //ss << "\tset_digital_out(0,True)" << "\n" ;//for toggle
+            ss << "\tset_analog_out(0," << flowrate << ")" << "\n" ;//for watson marlow
+            //ss << "\tForce Sensing (pose_1,offset,f_value,vel)\n";
+            ss << "\tForce Sensing (p["  <<
+                     pose_rotvec_quat[0] << "," << //x
+                     pose_rotvec_quat[1] << "," << //y
+                     z << "," << //z //pose_rotvec_quat[2] << "," << //z
+                     pose_rotvec_quat[3] << "," << //Rx
+                     pose_rotvec_quat[4] << "," << //Ry
+                     pose_rotvec_quat[5] << "]," << //Rz
+                     "offset_num," << force << ","<<velocity<<")\n";
+            ss << "\tset_analog_out(0,0)" << "#01\n" ;//for watson marlow off
+
+            ss << "\tsleep(" << wait_time << ")\n" ; // delay for reading
+        }
+        else if(last_IO==1 && curr_IO==1)//D, masking traverse, move to point slowly
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            ss  << "\tmovep(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2.str() << ")#11\n";
+        }
+        else if(last_IO==1 && curr_IO==0)//E, masking end, move to point slowly, stop mask
+        {
+            if(z_pos[1]>0)z=z_pos[0];//for fixed z and lift
+            ss  << "\tmovel(get_inverse_kin(p["  <<
+            pose_rotvec_quat[0] << "," << //x
+            pose_rotvec_quat[1] << "," << //y
+            z << "," << //z //pose_rotvec_quat[2] << "," << //z
+            pose_rotvec_quat[3] << "," << //Rx
+            pose_rotvec_quat[4] << "," << //Ry
+            pose_rotvec_quat[5] << "],[" << //Rz
+            moveit_traj.joint_trajectory.points[i].positions[0] << ","   << //j1
+            moveit_traj.joint_trajectory.points[i].positions[1] << ","   << //j2
+            moveit_traj.joint_trajectory.points[i].positions[2] << ","   << //j3
+            moveit_traj.joint_trajectory.points[i].positions[3] << ","   << //j4
+            moveit_traj.joint_trajectory.points[i].positions[4] << ","   << //j5
+            moveit_traj.joint_trajectory.points[i].positions[5] << "]), "<< //<< //j6
+            variable_command1.str() << velocity <<
+            variable_command2_r0.str() << ")\n";
+            //ss  << "\tset_analog_out(0,0)" << "\n" ;//for flowrate
+            //ss  << "\tset_digital_out(0,False)" << "\n" ;//for toggle
+            ss  << "\tsleep(0.3)" << "#10\n" ; //dispensing delay for eco pen 0.3
+        }
+        last_last_IO = last_IO;
+        last_IO = curr_IO;
+
+        Eigen::Affine3d tmp_transl(Eigen::Translation3d(pose_rotvec_quat[0],pose_rotvec_quat[1],pose_rotvec_quat[2]));
+        Eigen::Affine3d tmp_rot; tmp_rot = rot_mat;       //josh , temp for output of pose in RViz to visualize
+        Eigen::Affine3d tmp_pose = tmp_transl *  tmp_rot; //josh , temp for output of pose in RViz to visualize
+        poses.push_back(tmp_pose);                        //josh , temp for output of pose in RViz to visualize
+
+    }
+
+    }
+    // Turn off masking dispense
+    // ss  << "\tset_digital_out(1,False)" << "\n" ;
+    ss  << "end\n" ;
+
+    if(bSaveToFile) {
+        ROS_INFO_STREAM("\tsaving...");
+        std::ofstream filePtr;
+        filePtr.open(filename.c_str(), std::ofstream::out);
+        // std::string dataToWrite = ss.str();
+        dataToWrite.clear();
+        dataToWrite = ss.str();
+        filePtr << dataToWrite.c_str();
+        filePtr.close();
+    }
+    publishPosesMarkers(poses); //josh , temp for output of pose in RViz to visualize
+    ros::spinOnce();            //josh , temp for output of pose in RViz to visualize
+
+    ROS_INFO_STREAM("Done\n\n");
   }
 }

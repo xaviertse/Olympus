@@ -2613,8 +2613,10 @@ void ATG_Window::pushButton_queue_clicked()
     blend_zone= std::to_string(ui.doubleSpinBox_ndt_blend_radius->value());
     lift_spd  = std::to_string(ui.doubleSpinBox_ndt_lift_speed  ->value());
     opt1      = std::to_string(ui.doubleSpinBox_ndt_flowrate    ->value());
+    opt2      = std::to_string(ui.doubleSpinBox_ndt_force       ->value());
+    opt3      = std::to_string(ui.doubleSpinBox_ndt_wait        ->value());
     process   = "NDT";
-    cmd = "#Line1:Comments Line2:filename;process;tcp_info Line3:feedrate;blend/zone radius;lift_spd;flowrate;0;0;0; Line4:obj pose from base frame; Subsequent points are actual points on the coupon";
+    cmd = "#Line1:Comments Line2:filename;process;tcp_info Line3:feedrate;blend/zone radius;lift_spd;flowrate;force;wait_time;0; Line4:obj pose from base frame; Subsequent points are actual points on the coupon";
   }
   else
   {
