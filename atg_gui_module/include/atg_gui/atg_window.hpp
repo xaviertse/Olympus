@@ -90,6 +90,8 @@ namespace atg_gui
     void comboBox_tool_selection_clicked(QString value);
     void comboBox_env_selection_clicked(QString value);
     void comboBox_robot_selection_clicked(QString value);
+    void pushButton_read_robot_joints_clicked();
+    void read_joints_thread();
 
     void robot_TCP_changed(double value);
     void flip_surface_normal();
@@ -167,6 +169,7 @@ namespace atg_gui
     std::vector<pcl::PointXYZ> cluster_centroids_; //store cluster's centroid pose for 3dText/label position;
     QTimer *g_seg_timer_;  //for segmentation timer
     QTimer *g_tpg_timer_;  //for toolpath gen timer
+    QTimer *g_rjv_timer_;  //for read joint values timer
     //std::atomic seg_thread_connected_ = false;
   };
 }

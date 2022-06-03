@@ -239,6 +239,8 @@ ATG_Window::ATG_Window(int argc, char** argv, QWidget *parent) :
     connect (ui.doubleSpinBox_robot_eeY_       , SIGNAL (valueChanged (double)), this, SLOT (robot_TCP_changed(double)));
     connect (ui.doubleSpinBox_nkns_spindle_tool_dia  , SIGNAL (valueChanged (double)), this, SLOT (robot_TCP_changed(double)));
     connect (ui.doubleSpinBox_nkns_spindle_tilt_angle, SIGNAL (valueChanged (double)), this, SLOT (robot_TCP_changed(double)));
+    connect (ui.pushButton_read_robot_joints   , SIGNAL (clicked()), this, SLOT (pushButton_read_robot_joints_clicked ()));
+
     //WorkObj tab
     // KIV, not needed ATM //connect (ui.pushButton_align_object, SIGNAL (clicked()), this, SLOT (align_pcd_to_object_frame())); //josh added
     connect (ui.pushButton_flip_surface_normal, SIGNAL (clicked()), this, SLOT (flip_surface_normal ()));
@@ -661,12 +663,16 @@ void ATG_Window::readQSettings_ENV_OBJ_only()//read Environment and Obj Frame on
 
 void ATG_Window::readQSettings_Robot_IP_only()
 {
+  float PI = 3.142;
   QSettings settings(QString(config_file_dir_), QSettings::IniFormat);
   QString readValue = ""; bool readBool = 0;
   //check tool and robot combobox for TCP and eeTCP
   QString robot_selection = ui.comboBox_robot_selection->currentText();
   QString default_IP = "192.168.0.100";
   QString default_Port = "30002";
+  QString default_cur_j1,default_cur_j2,default_cur_j3,default_cur_j4,default_cur_j5,default_cur_j6;
+  QString default_min_j1,default_min_j2,default_min_j3,default_min_j4,default_min_j5,default_min_j6;
+  QString default_max_j1,default_max_j2,default_max_j3,default_max_j4,default_max_j5,default_max_j6;
   if(robot_selection=="ABB IRB 1200"
    ||robot_selection=="ABB IRB 2400"
    ||robot_selection=="ABB IRB 2600")
@@ -675,10 +681,86 @@ void ATG_Window::readQSettings_Robot_IP_only()
     default_Port = "80";
   }
 
+  if(robot_selection=="ABB IRB 1200")
+  {
+    default_cur_j1=QString::number(0.30008*180/PI); default_cur_j2=QString::number(0.50837*180/PI); default_cur_j3=QString::number(0.24313*180/PI); default_cur_j4=QString::number(0.30726*180/PI); default_cur_j5=QString::number(-0.81547*180/PI); default_cur_j6=QString::number(-0.32025*180/PI);
+    default_min_j1=QString::number(-99999);         default_min_j2=QString::number(-99999);       default_min_j3=QString::number(-99999);       default_min_j4=QString::number(-99999);       default_min_j5=QString::number(-99999);        default_min_j6=QString::number(-3.356*180/PI);
+    default_max_j1=QString::number( 99999);         default_max_j2=QString::number( 99999);       default_max_j3=QString::number( 99999);       default_max_j4=QString::number( 99999);       default_max_j5=QString::number( 99999);        default_max_j6=QString::number(3.356*180/PI);
+  }
+  else if(robot_selection=="ABB IRB 2400")
+  {
+    default_cur_j1=QString::number(0.8326*180/PI); default_cur_j2=QString::number(0.02272*180/PI); default_cur_j3=QString::number(0.3896*180/PI);  default_cur_j4=QString::number(-2.70461*180/PI); default_cur_j5=QString::number(-0.26099*180/PI); default_cur_j6=QString::number(2.7347*180/PI);
+    default_min_j1=QString::number(-99999);     default_min_j2=QString::number(-99999);       default_min_j3=QString::number(-0.7854*180/PI); default_min_j4=QString::number(-99999);        default_min_j5=QString::number(-1.0*180/PI);     default_min_j6=QString::number(-3.356*180/PI);
+    default_max_j1=QString::number(99999);      default_max_j2=QString::number( 99999);       default_max_j3=QString::number(1.5708*180/PI);  default_max_j4=QString::number( 99999);        default_max_j5=QString::number(2.0944*180/PI);   default_max_j6=QString::number(3.356*180/PI);
+  }
+  else if(robot_selection=="ABB IRB 2600")
+  {
+    default_cur_j1=QString::number(-0.00688*180/PI); default_cur_j2=QString::number(-0.77160*180/PI); default_cur_j3=QString::number(0.97297*180/PI); default_cur_j4=QString::number(0.12127*180/PI); default_cur_j5=QString::number(-0.05921*180/PI); default_cur_j6=QString::number(0.06441*180/PI);
+    default_min_j1=QString::number(-99999);        default_min_j2=QString::number(-99999);        default_min_j3=QString::number(-99999);       default_min_j4=QString::number(-99999);       default_min_j5=QString::number(-99999);        default_min_j6=QString::number(-99999);
+    default_max_j1=QString::number( 99999);        default_max_j2=QString::number( 99999);        default_max_j3=QString::number( 99999);       default_max_j4=QString::number( 99999);       default_max_j5=QString::number( 99999);        default_max_j6=QString::number( 99999);
+  }
+  else if(robot_selection=="UR5e")
+  {
+    default_cur_j1=QString::number(1.22*180/PI); default_cur_j2=QString::number(-1.92*180/PI); default_cur_j3=QString::number(1.57*180/PI); default_cur_j4=QString::number(-1.309 *180/PI);  default_cur_j5=QString::number(-1.57*180/PI); default_cur_j6=QString::number(0.0);
+    default_min_j1=QString::number(-99999);    default_min_j2=QString::number(-99999);     default_min_j3=QString::number(-99999);    default_min_j4=QString::number(-2.3569*180/PI); default_min_j5=QString::number(-99999);     default_min_j6=QString::number(-99999);
+    default_max_j1=QString::number( 99999);    default_max_j2=QString::number( 99999);     default_max_j3=QString::number( 99999);    default_max_j4=QString::number(-0.7854*180/PI); default_max_j5=QString::number( 99999);     default_max_j6=QString::number( 99999);
+  }
+  else if(robot_selection=="UR10")
+  {
+    default_cur_j1=QString::number(-2.25*180/PI); default_cur_j2=QString::number(-1.16*180/PI); default_cur_j3=QString::number(-1.86*180/PI); default_cur_j4=QString::number(-1.67*180/PI); default_cur_j5=QString::number(1.58*180/PI); default_cur_j6=QString::number(0);
+    default_min_j1=QString::number(-99999);     default_min_j2=QString::number(-99999);     default_min_j3=QString::number(-99999);     default_min_j4=QString::number(-99999);     default_min_j5=QString::number(-99999);    default_min_j6=QString::number(-99999);
+    default_max_j1=QString::number( 99999);     default_max_j2=QString::number( 99999);     default_max_j3=QString::number( 99999);     default_max_j4=QString::number( 99999);     default_max_j5=QString::number( 99999);    default_max_j6=QString::number( 99999);
+  }
+  else if(robot_selection=="UR10e")
+  {
+    default_cur_j1=QString::number(0.785398*180/PI); default_cur_j2=QString::number(-1.74533*180/PI); default_cur_j3=QString::number(2.06893 *180/PI);   default_cur_j4=QString::number(-1.8944*180/PI); default_cur_j5=QString::number(-1.5708*180/PI); default_cur_j6=QString::number(0);
+    default_min_j1=QString::number(-99999);        default_min_j2=QString::number(-2.26893*180/PI); default_min_j3=QString::number(0.174533*180/PI);   default_min_j4=QString::number(-99999);       default_min_j5=QString::number(-99999);       default_min_j6=QString::number(-99999);
+    default_max_j1=QString::number( 99999);        default_max_j2=QString::number( 99999);          default_max_j3=QString::number(2.61799 *180/PI);   default_max_j4=QString::number( 99999);       default_max_j5=QString::number( 99999);       default_max_j6=QString::number(1.5708*180/PI);
+  }
+
   readValue = settings.value(robot_selection+"/param/IP", default_IP).toString();
   ui.line_edit_robot_ip->setText(readValue);
   readValue = settings.value(robot_selection+"/param/Port", default_Port).toString();
   ui.spinBox_robot_port->setValue(readValue.toInt());
+
+  readValue = settings.value(robot_selection+"/cur/j1", default_cur_j1).toString();
+  ui.doubleSpinBox_robot_cur_j1->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/cur/j2", default_cur_j2).toString();
+  ui.doubleSpinBox_robot_cur_j2->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/cur/j3", default_cur_j3).toString();
+  ui.doubleSpinBox_robot_cur_j3->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/cur/j4", default_cur_j4).toString();
+  ui.doubleSpinBox_robot_cur_j4->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/cur/j5", default_cur_j5).toString();
+  ui.doubleSpinBox_robot_cur_j5->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/cur/j6", default_cur_j6).toString();
+  ui.doubleSpinBox_robot_cur_j6->setValue(readValue.toDouble());
+
+  readValue = settings.value(robot_selection+"/min/j1", default_min_j1).toString();
+  ui.doubleSpinBox_robot_min_j1->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/min/j2", default_min_j2).toString();
+  ui.doubleSpinBox_robot_min_j2->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/min/j3", default_min_j3).toString();
+  ui.doubleSpinBox_robot_min_j3->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/min/j4", default_min_j4).toString();
+  ui.doubleSpinBox_robot_min_j4->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/min/j5", default_min_j5).toString();
+  ui.doubleSpinBox_robot_min_j5->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/min/j6", default_min_j6).toString();
+  ui.doubleSpinBox_robot_min_j6->setValue(readValue.toDouble());
+
+  readValue = settings.value(robot_selection+"/max/j1", default_max_j1).toString();
+  ui.doubleSpinBox_robot_max_j1->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/max/j2", default_max_j2).toString();
+  ui.doubleSpinBox_robot_max_j2->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/max/j3", default_max_j3).toString();
+  ui.doubleSpinBox_robot_max_j3->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/max/j4", default_max_j4).toString();
+  ui.doubleSpinBox_robot_max_j4->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/max/j5", default_max_j5).toString();
+  ui.doubleSpinBox_robot_max_j5->setValue(readValue.toDouble());
+  readValue = settings.value(robot_selection+"/max/j6", default_max_j6).toString();
+  ui.doubleSpinBox_robot_max_j6->setValue(readValue.toDouble());
 }
 
 void ATG_Window::writeQSettings() //write settings when value change
@@ -692,6 +774,26 @@ void ATG_Window::writeQSettings() //write settings when value change
 //    settings.setValue("WorkObj/Frame/rx", QString::number(ui.doubleSpinBox_object_Rx->value(),'f',2));
 //    settings.setValue("WorkObj/Frame/ry", QString::number(ui.doubleSpinBox_object_Ry->value(),'f',2));
 //    settings.setValue("WorkObj/Frame/rz", QString::number(ui.doubleSpinBox_object_Rz->value(),'f',2));
+
+    property_name = ui.comboBox_robot_selection->currentText();//robot name
+    settings.setValue(property_name+"/cur/j1",       QString::number(ui.doubleSpinBox_robot_cur_j1->value(),'f',2));
+    settings.setValue(property_name+"/cur/j2",       QString::number(ui.doubleSpinBox_robot_cur_j2->value(),'f',2));
+    settings.setValue(property_name+"/cur/j3",       QString::number(ui.doubleSpinBox_robot_cur_j3->value(),'f',2));
+    settings.setValue(property_name+"/cur/j4",       QString::number(ui.doubleSpinBox_robot_cur_j4->value(),'f',2));
+    settings.setValue(property_name+"/cur/j5",       QString::number(ui.doubleSpinBox_robot_cur_j5->value(),'f',2));
+    settings.setValue(property_name+"/cur/j6",       QString::number(ui.doubleSpinBox_robot_cur_j6->value(),'f',2));
+    settings.setValue(property_name+"/min/j1",       QString::number(ui.doubleSpinBox_robot_min_j1->value(),'f',2));
+    settings.setValue(property_name+"/min/j2",       QString::number(ui.doubleSpinBox_robot_min_j2->value(),'f',2));
+    settings.setValue(property_name+"/min/j3",       QString::number(ui.doubleSpinBox_robot_min_j3->value(),'f',2));
+    settings.setValue(property_name+"/min/j4",       QString::number(ui.doubleSpinBox_robot_min_j4->value(),'f',2));
+    settings.setValue(property_name+"/min/j5",       QString::number(ui.doubleSpinBox_robot_min_j5->value(),'f',2));
+    settings.setValue(property_name+"/min/j6",       QString::number(ui.doubleSpinBox_robot_min_j6->value(),'f',2));
+    settings.setValue(property_name+"/max/j1",       QString::number(ui.doubleSpinBox_robot_max_j1->value(),'f',2));
+    settings.setValue(property_name+"/max/j2",       QString::number(ui.doubleSpinBox_robot_max_j2->value(),'f',2));
+    settings.setValue(property_name+"/max/j3",       QString::number(ui.doubleSpinBox_robot_max_j3->value(),'f',2));
+    settings.setValue(property_name+"/max/j4",       QString::number(ui.doubleSpinBox_robot_max_j4->value(),'f',2));
+    settings.setValue(property_name+"/max/j5",       QString::number(ui.doubleSpinBox_robot_max_j5->value(),'f',2));
+    settings.setValue(property_name+"/max/j6",       QString::number(ui.doubleSpinBox_robot_max_j6->value(),'f',2));
 
     property_name = "WorkObj";
     settings.setValue(property_name+"/Fixed_z/z",       QString::number(ui.doubleSpinBox_fixed_z     ->value(),'f',2));
@@ -1643,6 +1745,90 @@ void ATG_Window::robot_TCP_changed(double value){
   ui.label_robot_tcp_info_xyzquat_ABB->setText(text1); //for UR
 }
 
+int read_joints_timer_count = 0;
+void ATG_Window::pushButton_read_robot_joints_clicked(){
+  std::string cmd="";
+  std::string Host = ui.line_edit_robot_ip->text().toStdString();
+  std::string Port = ui.spinBox_robot_port->text().toStdString();
+  std::string Fileout = in_data_file_dir_.toStdString() + "joint_values.txt";
+
+  //robot dependent var
+  if(ui.comboBox_robot_selection->currentText()=="ABB IRB 2400"
+   ||ui.comboBox_robot_selection->currentText()=="ABB IRB 2600"
+   ||ui.comboBox_robot_selection->currentText()=="ABB IRB 1200")
+  {
+    //no script yet
+  }
+  else if(ui.comboBox_robot_selection->currentText()=="UR10"
+       || ui.comboBox_robot_selection->currentText()=="UR10e"
+       || ui.comboBox_robot_selection->currentText()=="UR5e")
+  {
+    cmd="xterm -hold -e 'rosrun atg_gui get_ur_joints.py --host " + Host +
+                                                       " --port " + Port +
+                                                       " --fileout " + Fileout +
+                                                       "' &";
+  }
+
+  if(cmd!="")
+  {
+    system(cmd.c_str());
+    cmd = "sleep 1; xdotool search --class xterm set_desktop_for_window %@ 1";
+    system(cmd.c_str());
+    std::cout<<"Reading joints values from TCPIP!"<< std::endl;
+    log(Info,std::string("Reading joints values from TCPIP!"));
+
+    //run timer to launch and track joints reading node
+    read_joints_timer_count = 0;
+    QTimer *rjv_timer = new QTimer(this);
+    connect (rjv_timer, SIGNAL(timeout()), this, SLOT(read_joints_thread()));   //for read joints timer
+    rjv_timer->start(200); //time specified in ms       //for read joints timer
+    g_rjv_timer_ = rjv_timer;
+  }
+}
+
+void ATG_Window::read_joints_thread()
+{
+  //subsequent entry, track segmentation node progress through signal
+  g_rjv_timer_->setInterval(200);
+  read_joints_timer_count+=1;
+  //check signal
+  std::vector<std::string> lines;
+  lines=read_write_fsignal("joint_values",'r');
+  if(lines[0] == "Invalid Connection")
+  {
+    g_rjv_timer_->stop();
+    log(Info,std::string("Read Joints from TCP Connection Error!"));
+    QMessageBox::information(NULL, tr("Connection Error"), tr("Please check connection to robot."));
+    //prompt error and enable buttons
+  }
+  else if(lines[0] == "Valid Joints") //valid float signal
+  {
+    g_rjv_timer_->stop();
+    ui.doubleSpinBox_robot_cur_j1->setValue(std::stod(lines[1]));
+    ui.doubleSpinBox_robot_cur_j2->setValue(std::stod(lines[2]));
+    ui.doubleSpinBox_robot_cur_j3->setValue(std::stod(lines[3]));
+    ui.doubleSpinBox_robot_cur_j4->setValue(std::stod(lines[4]));
+    ui.doubleSpinBox_robot_cur_j5->setValue(std::stod(lines[5]));
+    ui.doubleSpinBox_robot_cur_j6->setValue(std::stod(lines[6]));
+    log(Info,std::string("Read Joints from TCP Completed!"));
+  }
+  else if (g_rjv_timer_->interval()*read_joints_timer_count>15000) //timeout
+  {
+    g_rjv_timer_->stop();
+    log(Info,std::string("Read Joints from TCP Connection Timeout!"));
+    QMessageBox::information(NULL, tr("Connection Timeout"), tr("Please check connection to robot."));
+    return;
+  }
+  else// no msg or invalid msg, continue to next interval
+  {
+    return;
+  }
+  //stop signal to prevent repeat of timer running read_joints_thread() again
+  g_rjv_timer_->stop();
+  read_write_fsignal("joint_values",'d');
+
+}
+
 //=========Work Object tab===========
 void ATG_Window::flip_surface_normal(){
   std::string cmd;
@@ -2405,7 +2591,7 @@ void ATG_Window::pushButton_draw_simple_toolpath_clicked(){
   //check if cloud is loaded, return if not no cluster/toolpath available
   pcl::PointCloud<pcl::Normal>::Ptr cloud_cluster_sel_norm (new pcl::PointCloud<pcl::Normal>);
 
-  std::string filename = "data/coupons/tool_path_back_projected_w_lift.pcd";
+  std::string filename = in_data_file_dir_.toStdString()+"tool_path_back_projected_w_lift.pcd";//"data/coupons/tool_path_back_projected_w_lift.pcd";
   if ( pcl::io::loadPCDFile <pcl::PointXYZ> (filename, *g_cloud_toolpath_) == -1)
   {
     std::cout << "Failed to read cluster file from: " << filename << std::endl;
@@ -2850,6 +3036,44 @@ void ATG_Window::pushButton_robotSetup_clicked()
       //do nothing
     }
   }
+
+  //generate initial_params.yaml and joint_limits.yaml
+  if(1)
+  {
+    //std::string filename_output1 = package_name + "/config/initial_params.yaml";
+    //std::string filename_output2 = package_name + "/config/joint_limits.yaml";
+    cmd =  "xterm -hold -e \"rosrun atg_gui create_joints_param_yaml.py ";
+    cmd += "-r '"+ui.comboBox_robot_selection->currentText().toStdString()+"' ";
+    cmd += "-i_file "+ package_name + "/config/initial_params.yaml ";
+    cmd += "-jl_file "+ package_name + "/config/joint_limits.yaml ";
+    cmd += "-jc ";
+    cmd += ui.doubleSpinBox_robot_cur_j1->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_cur_j2->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_cur_j3->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_cur_j4->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_cur_j5->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_cur_j6->text().toStdString() + " ";
+    cmd += "-jmin ";
+    cmd += ui.doubleSpinBox_robot_min_j1->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_min_j2->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_min_j3->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_min_j4->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_min_j5->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_min_j6->text().toStdString() + " ";
+    cmd += "-jmax ";
+    cmd += ui.doubleSpinBox_robot_max_j1->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_max_j2->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_max_j3->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_max_j4->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_max_j5->text().toStdString() + " ";
+    cmd += ui.doubleSpinBox_robot_max_j6->text().toStdString() + " ";
+    cmd += "\" &";
+    system(cmd.c_str());
+    cmd = "sleep 1; xdotool search --class xterm set_desktop_for_window %@ 1";
+    system(cmd.c_str());
+    //rosrun atg_gui create_joints_param_yaml.py -r 'ABB 1200' -jc 1 2 3 4 5 6 -jmin -7 -8 -9 -10 -11 -99999 -jmax 13 14 15 16 17 99999
+  }
+
 
   //launch robot shell script -> launch file
   sleep(3);

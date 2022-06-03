@@ -7,7 +7,7 @@
   <arg name="limited" default="true" />
   <arg name="prefix" default="" />
 
-  <rosparam command="load" file="$(find atg_ur10_moveit_config)/config/initial_params.yaml" />
+  <!--rosparam command="load" file="$(find atg_ur10_moveit_config)/config/initial_params.yaml" /-->
   <!--<rosparam command="load" file="$(find masking)/config/masking_params.yaml" />>
   <rosparam if="$(eval robot_setup_config_name == 'ur10')" command="load" file="$(find atg_ur10_moveit_config)/config/initial_params.yaml" />
   <rosparam if="$(eval robot_setup_config_name == 'ur10e')" command="load" file="$(find atg_ur10_e_moveit_config)/config/initial_params.yaml" /-->
@@ -40,6 +40,13 @@
   </group-->
 
   <rosparam param="controller_joint_names">[  'shoulder_pan_joint',  'shoulder_lift_joint',  'elbow_joint', 'wrist_1_joint',  'wrist_2_joint',  'wrist_3_joint']</rosparam>
+
+  <!--Load initial params and joint limits from custom tool_model directory-->
+  <rosparam command="load" file="$(find tool_model)/config/initial_params.yaml" />
+  <arg name="robot_description" default="robot_description"/>
+  <group ns="$(arg robot_description)_planning">
+    <rosparam command="load" file="$(find tool_model)/config/joint_limits.yaml"/>
+  </group>
 
   <!-- run the "real robot" interface nodes -->
   <!--   - this typically includes: robot_state, motion_interface, and joint_trajectory_action nodes -->

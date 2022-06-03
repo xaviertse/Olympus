@@ -9,7 +9,7 @@
   <!--arg name="robot_ip" doc="IP of the controller"/-->
   <arg name="J23_coupled" default="true" doc="If true, compensate for J2-J3 parallel linkage" />
 
-  <rosparam command="load" file="$(find atg_abb_irb2600_moveit_config)/config/initial_params.yaml" />
+  <!--rosparam command="load" file="$(find atg_abb_irb2600_moveit_config)/config/initial_params.yaml" /-->
 
   <!-- By default, we do not start a database (it can be large) -->
   <arg name="db" default="false" />
@@ -33,6 +33,13 @@
   </include>
 
   <rosparam param="controller_joint_names">[  'joint_1',  'joint_2',  'joint_3', 'joint_4',  'joint_5',  'joint_6']</rosparam>
+
+  <!--Load initial params and joint limits from custom tool_model directory-->
+  <rosparam command="load" file="$(find tool_model)/config/initial_params.yaml" />
+  <arg name="robot_description" default="robot_description"/>
+  <group ns="$(arg robot_description)_planning">
+    <rosparam command="load" file="$(find tool_model)/config/joint_limits.yaml"/>
+  </group>
 
   <!-- run the "real robot" interface nodes -->
   <!--   - this typically includes: robot_state, motion_interface, and joint_trajectory_action nodes -->
