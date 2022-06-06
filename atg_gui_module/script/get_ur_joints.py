@@ -33,7 +33,7 @@ conf = rtde_config.ConfigFile(args.config)
 output_names, output_types = conf.get_recipe('out')
 
 con = rtde.RTDE(args.host, args.port)
-exit()
+
 try:
     con.connect()
 except Exception as e:
