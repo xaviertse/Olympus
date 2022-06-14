@@ -32,6 +32,11 @@ args = parser.parse_args()
 conf = rtde_config.ConfigFile(args.config)
 output_names, output_types = conf.get_recipe('out')
 
+print ("Reading from RTDE via:-\nIP: "+ args.host)
+print ("Port: "+ str(args.port))
+args.port = 30004
+
+print ("Overwrite to use following port instead\nPort: "+ str(args.port))
 con = rtde.RTDE(args.host, args.port)
 
 try:
